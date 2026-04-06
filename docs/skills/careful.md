@@ -7,9 +7,23 @@
 
 ## 这个技能是什么？
 
-在 `rm -rf`、`DROP TABLE`、`git reset --hard`、`kubectl delete` 等破坏性命令前弹出警告。
+在破坏性命令执行前弹出警告。用户可以覆盖每个警告。
 
-**不阻止执行**——只是在执行前提醒，用户可以覆盖。
+**覆盖的命令类型**：
+- `rm -rf` / `rm -r` — 递归删除
+- `DROP TABLE` / `DELETE FROM` — 数据库破坏
+- `git reset --hard` / `git push --force` — Git 不可逆操作
+- `kubectl delete` — Kubernetes 资源删除
+- `docker system prune` — Docker 清理
+- `pkill` / `kill -9` — 进程终止
+
+**不阻止执行**——只提醒。尊重用户判断。
+
+---
+
+## 实现机制
+
+通过 PreToolUse hook 拦截 Bash 调用，检查命令文本中的危险模式。
 
 ---
 
@@ -17,5 +31,6 @@
 
 | 设计决策 | 原因 |
 |---------|------|
-| 警告不阻止 | 尊重用户判断 |
-| 覆盖面广 | git/docker/k8s/SQL/rm 全覆盖 |
+| 警告不阻止 | 尊重用户，不做保姆 |
+| 宽覆盖 | git/docker/k8s/SQL/rm 全覆盖 |
+| 用户可覆盖 | 安全网，不是防火墙 |
