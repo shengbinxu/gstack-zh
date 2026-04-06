@@ -1,22 +1,29 @@
 # `/freeze` 技能深度注解
 
 > 对应源文件：[`freeze/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/freeze/SKILL.md.tmpl)
-> 将文件编辑限制在指定目录。
+> 限制文件编辑范围。
 
-## 核心定位
+---
 
-把 Edit 和 Write 操作锁定到一个目录。目录外的编辑会被**阻止**（不是警告）。
+## 这个技能是什么？
 
-用途：调试时防止"顺手"改了不相关代码，或者想把变更限定在一个模块。
+指定一个目录，阻止 Edit/Write 到该目录之外。
 
-## 实现
+**用途**：调试时防止改到不相关代码。`/investigate` 自动调用它。
 
-```bash
-# 状态文件
-~/.gstack/freeze-dir.txt
-# 内容：/absolute/path/to/allowed/dir/
+**解除**：运行 `/unfreeze`。
 
-# hook 脚本检查每次 Edit/Write 的目标路径是否在允许范围内
-```
+---
 
-配套技能：`/unfreeze` 清除限制。
+## 实现机制
+
+写入 `~/.gstack/freeze-dir.txt`，PreToolUse hook 在每次 Edit/Write 前检查。
+
+---
+
+## 总结
+
+| 设计决策 | 原因 |
+|---------|------|
+| hook 实现 | 物理阻止，不靠 prompt 自律 |
+| 被 /investigate 调用 | 调试范围控制 |
