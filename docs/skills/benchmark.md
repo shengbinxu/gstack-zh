@@ -1,6 +1,6 @@
 # `/benchmark` 技能深度注解
 
-> 对应源文件：`benchmark/SKILL.md.tmpl`
+> 对应源文件：[`benchmark/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/benchmark/SKILL.md.tmpl)
 > 性能回归检测：基线对比、Core Web Vitals、资源大小。
 
 ## 核心定位

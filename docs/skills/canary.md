@@ -1,6 +1,6 @@
 # `/canary` 技能深度注解
 
-> 对应源文件：`canary/SKILL.md.tmpl`
+> 对应源文件：[`canary/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/canary/SKILL.md.tmpl)
 > 部署后金丝雀监控：前 10 分钟自动巡检。
 
 ## 核心定位

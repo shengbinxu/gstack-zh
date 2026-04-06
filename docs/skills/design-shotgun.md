@@ -1,6 +1,6 @@
 # `/design-shotgun` 技能深度注解
 
-> 对应源文件：`design-shotgun/SKILL.md.tmpl`
+> 对应源文件：[`design-shotgun/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/design-shotgun/SKILL.md.tmpl)
 > 视觉头脑风暴：生成多个 AI 设计变体，并排比较。
 
 ## 核心定位

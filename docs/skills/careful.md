@@ -1,6 +1,6 @@
 # `/careful` 技能深度注解
 
-> 对应源文件：`careful/SKILL.md.tmpl`
+> 对应源文件：[`careful/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/careful/SKILL.md.tmpl)
 > 破坏性命令守卫：在危险操作前警告。
 
 ## 保护的模式

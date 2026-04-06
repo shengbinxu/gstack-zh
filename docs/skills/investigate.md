@@ -1,6 +1,6 @@
 # `/investigate` 技能深度注解
 
-> 对应源文件：`investigate/SKILL.md.tmpl`
+> 对应源文件：[`investigate/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/investigate/SKILL.md.tmpl)
 > 系统性调试，铁律：没有根因分析就不准修。
 
 ## Iron Law（铁律）

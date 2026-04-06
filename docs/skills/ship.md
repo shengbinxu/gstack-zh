@@ -1,6 +1,6 @@
 # `/ship` 技能深度注解
 
-> 对应源文件：`ship/SKILL.md.tmpl`
+> 对应源文件：[`ship/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/ship/SKILL.md.tmpl)
 > gstack 的"发布工程师"，从代码到 PR 一条龙。
 
 ---

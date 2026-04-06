@@ -1,6 +1,6 @@
 # `/retro` 技能深度注解
 
-> 对应源文件：`retro/SKILL.md.tmpl`
+> 对应源文件：[`retro/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/retro/SKILL.md.tmpl)
 > 周回顾：分析提交历史、工作模式、代码质量趋势。
 
 ## 核心定位

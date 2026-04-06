@@ -1,6 +1,6 @@
 # `/review` 技能深度注解
 
-> 对应源文件：`review/SKILL.md.tmpl`
+> 对应源文件：[`review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/review/SKILL.md.tmpl)
 > Pre-Landing PR 评审，找测试抓不到的结构性问题。
 
 ---

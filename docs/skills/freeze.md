@@ -1,6 +1,6 @@
 # `/freeze` 技能深度注解
 
-> 对应源文件：`freeze/SKILL.md.tmpl`
+> 对应源文件：[`freeze/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/freeze/SKILL.md.tmpl)
 > 将文件编辑限制在指定目录。
 
 ## 核心定位

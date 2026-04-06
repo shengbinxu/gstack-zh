@@ -1,6 +1,6 @@
 # `/gstack-upgrade` 技能深度注解
 
-> 对应源文件：`gstack-upgrade/SKILL.md.tmpl`
+> 对应源文件：[`gstack-upgrade/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/gstack-upgrade/SKILL.md.tmpl)
 > 升级 gstack 到最新版本。
 
 ## 核心定位

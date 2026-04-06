@@ -1,6 +1,6 @@
 # `/codex` 技能深度注解
 
-> 对应源文件：`codex/SKILL.md.tmpl`
+> 对应源文件：[`codex/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/codex/SKILL.md.tmpl)
 > 多 AI 第二意见：用 OpenAI Codex CLI 获取独立评审。
 
 ## 核心定位

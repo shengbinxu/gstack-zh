@@ -1,6 +1,6 @@
 # `/setup-deploy` 技能深度注解
 
-> 对应源文件：`setup-deploy/SKILL.md.tmpl`
+> 对应源文件：[`setup-deploy/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/setup-deploy/SKILL.md.tmpl)
 > 一次性配置部署，让 /land-and-deploy 自动工作。
 
 ## 核心定位

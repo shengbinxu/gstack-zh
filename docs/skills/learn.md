@@ -1,6 +1,6 @@
 # `/learn` 技能深度注解
 
-> 对应源文件：`learn/SKILL.md.tmpl`
+> 对应源文件：[`learn/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/learn/SKILL.md.tmpl)
 > 管理项目学习记录：查看、搜索、清理、导出。
 
 ## 核心定位

@@ -1,6 +1,6 @@
 # `/open-gstack-browser` 技能深度注解
 
-> 对应源文件：`open-gstack-browser/SKILL.md.tmpl`
+> 对应源文件：[`open-gstack-browser/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/open-gstack-browser/SKILL.md.tmpl)
 > 启动 GStack Browser：可见的 AI 控制 Chromium。
 
 ## 核心定位

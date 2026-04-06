@@ -1,6 +1,6 @@
 # `/qa` 技能深度注解
 
-> 对应源文件：`qa/SKILL.md.tmpl`
+> 对应源文件：[`qa/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/qa/SKILL.md.tmpl)
 > 用真实浏览器系统性测试，发现 bug 后直接修复。
 
 ## 核心定位

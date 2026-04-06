@@ -1,6 +1,6 @@
 # `/qa-only` 技能深度注解
 
-> 对应源文件：`qa-only/SKILL.md.tmpl`
+> 对应源文件：[`qa-only/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/qa-only/SKILL.md.tmpl)
 
 ## 核心定位
 

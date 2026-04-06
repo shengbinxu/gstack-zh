@@ -1,6 +1,6 @@
 # `/office-hours` 技能深度注解
 
-> 对应源文件：`office-hours/SKILL.md.tmpl`
+> 对应源文件：[`office-hours/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/office-hours/SKILL.md.tmpl)
 > 这是 gstack 的"YC 产品诊断"技能，也是整个技能链的起点。
 
 ---

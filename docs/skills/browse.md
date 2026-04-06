@@ -1,6 +1,6 @@
 # `/browse` 技能深度注解
 
-> 对应源文件：`browse/SKILL.md.tmpl`
+> 对应源文件：[`browse/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/browse/SKILL.md.tmpl)
 > 快速无头浏览器，QA 测试和 dogfooding 的基础工具。
 
 ## 核心定位

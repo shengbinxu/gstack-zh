@@ -1,6 +1,6 @@
 # `/land-and-deploy` 技能深度注解
 
-> 对应源文件：`land-and-deploy/SKILL.md.tmpl`
+> 对应源文件：[`land-and-deploy/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/land-and-deploy/SKILL.md.tmpl)
 > /ship 之后的下一步：合并 PR → 等 CI → 部署 → 验证生产。
 
 ## 核心定位

@@ -1,6 +1,6 @@
 # `/gstack-contrib-add-host` 技能深度注解
 
-> 对应源文件：`contrib/add-host/SKILL.md.tmpl`
+> 对应源文件：[`contrib/add-host/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/contrib/add-host/SKILL.md.tmpl)
 > 贡献者专用：为 gstack 的多宿主系统添加新 AI agent 支持。
 
 ## 核心定位

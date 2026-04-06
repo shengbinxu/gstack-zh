@@ -1,6 +1,6 @@
 # `/plan-devex-review` 技能深度注解
 
-> 对应源文件：`plan-devex-review/SKILL.md.tmpl`
+> 对应源文件：[`plan-devex-review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/plan-devex-review/SKILL.md.tmpl)
 > 开发者体验评审，三种模式：DX EXPANSION / DX POLISH / DX TRIAGE。
 
 ## 核心定位

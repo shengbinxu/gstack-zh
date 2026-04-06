@@ -1,6 +1,6 @@
 # `/design-review` 技能深度注解
 
-> 对应源文件：`design-review/SKILL.md.tmpl`
+> 对应源文件：[`design-review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/design-review/SKILL.md.tmpl)
 > 设计师 QA：找视觉不一致 → 直接修复。
 
 ## 核心定位

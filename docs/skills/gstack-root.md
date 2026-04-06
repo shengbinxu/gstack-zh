@@ -1,6 +1,6 @@
 # gstack 根技能深度注解
 
-> 对应源文件：`SKILL.md.tmpl`（仓库根目录）
+> 对应源文件：[`SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/SKILL.md.tmpl)（仓库根目录）
 > 这是 gstack 的路由入口：把用户请求分发到正确的技能。
 
 ## 核心定位

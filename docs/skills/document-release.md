@@ -1,6 +1,6 @@
 # `/document-release` 技能深度注解
 
-> 对应源文件：`document-release/SKILL.md.tmpl`
+> 对应源文件：[`document-release/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/document-release/SKILL.md.tmpl)
 > 发布后文档更新：确保文档与代码一致。
 
 ## 核心定位

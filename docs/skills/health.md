@@ -1,6 +1,6 @@
 # `/health` 技能深度注解
 
-> 对应源文件：`health/SKILL.md.tmpl`
+> 对应源文件：[`health/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/health/SKILL.md.tmpl)
 > 代码质量仪表盘：类型检查 + linter + 测试 + 死代码。
 
 ## 核心定位

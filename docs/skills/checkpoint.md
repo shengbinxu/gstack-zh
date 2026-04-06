@@ -1,6 +1,6 @@
 # `/checkpoint` 技能深度注解
 
-> 对应源文件：`checkpoint/SKILL.md.tmpl`
+> 对应源文件：[`checkpoint/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/checkpoint/SKILL.md.tmpl)
 > 保存和恢复工作状态，跨会话/跨工作区不丢失上下文。
 
 ## 核心定位

@@ -1,6 +1,6 @@
 # `/plan-eng-review` 技能深度注解
 
-> 对应源文件：`plan-eng-review/SKILL.md.tmpl`（317 行）
+> 对应源文件：[`plan-eng-review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/plan-eng-review/SKILL.md.tmpl)（317 行）
 > 本文在原文结构基础上加入中文翻译、设计原理解读，以及适合中国开发者的背景说明。
 
 ---

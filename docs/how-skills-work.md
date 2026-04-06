@@ -1,5 +1,6 @@
 # 技能系统深度解析
 
+> 对应源文件：[`scripts/gen-skill-docs.ts`](https://github.com/garrytan/gstack/blob/main/scripts/gen-skill-docs.ts) · [`scripts/resolvers/`](https://github.com/garrytan/gstack/tree/main/scripts/resolvers)
 > 本文解读 gstack 的技能模板系统：从 `.tmpl` 源文件到 Claude 执行的完整管线。
 > 重点：理解技能是什么、怎么写、怎么编译、各模板变量的作用。
 

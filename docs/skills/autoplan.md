@@ -1,6 +1,6 @@
 # `/autoplan` 技能深度注解
 
-> 对应源文件：`autoplan/SKILL.md.tmpl`
+> 对应源文件：[`autoplan/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/autoplan/SKILL.md.tmpl)
 > 一条命令跑完全部评审（CEO → Design → Eng → DX）。
 
 ## 核心定位

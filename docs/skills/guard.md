@@ -1,6 +1,6 @@
 # `/guard` 技能深度注解
 
-> 对应源文件：`guard/SKILL.md.tmpl`
+> 对应源文件：[`guard/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/guard/SKILL.md.tmpl)
 > 最大安全模式 = /careful + /freeze 组合。
 
 ## 核心定位

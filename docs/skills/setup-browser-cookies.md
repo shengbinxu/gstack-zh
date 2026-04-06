@@ -1,6 +1,6 @@
 # `/setup-browser-cookies` 技能深度注解
 
-> 对应源文件：`setup-browser-cookies/SKILL.md.tmpl`
+> 对应源文件：[`setup-browser-cookies/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/setup-browser-cookies/SKILL.md.tmpl)
 > 从真实浏览器导入 Cookie 到无头浏览器会话。
 
 ## 核心定位

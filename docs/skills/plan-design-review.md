@@ -1,6 +1,6 @@
 # `/plan-design-review` 技能深度注解
 
-> 对应源文件：`plan-design-review/SKILL.md.tmpl`
+> 对应源文件：[`plan-design-review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/plan-design-review/SKILL.md.tmpl)
 > 设计师视角评审方案（不是评审 live 站点，那是 /design-review）。
 
 ## 核心定位

@@ -1,6 +1,6 @@
 # `/design-consultation` 技能深度注解
 
-> 对应源文件：`design-consultation/SKILL.md.tmpl`
+> 对应源文件：[`design-consultation/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/design-consultation/SKILL.md.tmpl)
 > 从零创建设计系统：美学、排版、色彩、布局、间距、动效。
 
 ## 核心定位

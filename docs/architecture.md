@@ -1,6 +1,6 @@
 # gstack 架构解读
 
-> 对应原文：`ARCHITECTURE.md`
+> 对应原文：[`ARCHITECTURE.md`](https://github.com/garrytan/gstack/blob/main/ARCHITECTURE.md)
 > 本文在原文基础上加入中文注解和扩展说明。
 
 ---

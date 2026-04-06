@@ -1,6 +1,6 @@
 # `/devex-review` 技能深度注解
 
-> 对应源文件：`devex-review/SKILL.md.tmpl`
+> 对应源文件：[`devex-review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/devex-review/SKILL.md.tmpl)
 > Live DX 审计：实际测试开发者体验（不是评审方案）。
 
 ## 核心定位

@@ -1,6 +1,6 @@
 # `/design-html` 技能深度注解
 
-> 对应源文件：`design-html/SKILL.md.tmpl`
+> 对应源文件：[`design-html/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/design-html/SKILL.md.tmpl)
 > 把设计变成生产级 HTML/CSS（Pretext 原生）。
 
 ## 核心定位

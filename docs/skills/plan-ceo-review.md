@@ -1,6 +1,6 @@
 # `/plan-ceo-review` 技能深度注解
 
-> 对应源文件：`plan-ceo-review/SKILL.md.tmpl`
+> 对应源文件：[`plan-ceo-review/SKILL.md.tmpl`](https://github.com/garrytan/gstack/blob/main/plan-ceo-review/SKILL.md.tmpl)
 > CEO/创始人视角的方案评审：重新思考问题，找10星产品。
 
 ## 核心定位
