@@ -1,0 +1,101 @@
+name: Check for gstack upstream updates
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # Daily UTC 08:00
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gstack-zh (for SYNC.md)
+        uses: actions/checkout@v4
+
+      - name: Read last synced version
+        id: last
+        run: |
+          LAST_VER=$(grep 'gstack-version' SYNC.md | cut -d' ' -f2)
+          echo "version=$LAST_VER" >> "$GITHUB_OUTPUT"
+          echo "Last synced: $LAST_VER"
+
+      - name: Get latest gstack release
+        id: latest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST=$(gh api repos/garrytan/gstack/releases/latest --jq '.tag_name')
+          echo "version=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "Latest upstream: $LATEST"
+
+      - name: Skip if already in sync
+        run: |
+          if [ "${{ steps.last.outputs.version }}" = "${{ steps.latest.outputs.version }}" ]; then
+            echo "Already in sync with ${{ steps.latest.outputs.version }}, nothing to do."
+            exit 0
+          fi
+          echo "New upstream version detected: ${{ steps.last.outputs.version }} -> ${{ steps.latest.outputs.version }}"
+
+      - name: Checkout upstream gstack (full history for cross-tag diff)
+        if: steps.last.outputs.version != steps.latest.outputs.version
+        uses: actions/checkout@v4
+        with:
+          repository: garrytan/gstack
+          fetch-depth: 0
+          sparse-checkout: '**/*.tmpl'
+          path: upstream-gstack
+
+      - name: Compute changed template files
+        if: steps.last.outputs.version != steps.latest.outputs.version
+        id: diff
+        run: |
+          cd upstream-gstack
+          git fetch --tags
+          LAST_VER="${{ steps.last.outputs.version }}"
+          LATEST="${{ steps.latest.outputs.version }}"
+          git diff "${LAST_VER}..${LATEST}" --name-only -- '*.tmpl' '**/*.tmpl' > ../changed.txt 2>/dev/null || true
+          echo "Changed files:"
+          cat ../changed.txt
+          CHANGED=$(cat ../changed.txt | wc -l | tr -d ' ')
+          echo "count=$CHANGED" >> "$GITHUB_OUTPUT"
+
+      - name: Open sync reminder issue
+        if: steps.last.outputs.version != steps.latest.outputs.version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LAST_VER="${{ steps.last.outputs.version }}"
+          LATEST="${{ steps.latest.outputs.version }}"
+          CHANGED_COUNT="${{ steps.diff.outputs.count }}"
+          CHANGED_LIST=$(cat changed.txt 2>/dev/null || echo "(diff unavailable)")
+
+          gh issue create \
+            --title "Sync: gstack ${LATEST} released (was ${LAST_VER})" \
+            --label "sync" \
+            --body "## gstack upstream update detected
+
+**Previous version:** \`${LAST_VER}\`
+**New version:** \`${LATEST}\`
+**Changed template files:** ${CHANGED_COUNT}
+
+\`\`\`
+${CHANGED_LIST}
+\`\`\`
+
+## Checklist
+
+- [ ] Review changed \`.tmpl\` files above
+- [ ] Update corresponding annotation docs in \`docs/skills/\`
+- [ ] Update \`SYNC.md\` with new version and date
+- [ ] Close this issue
+
+**After syncing:** Update \`SYNC.md\`:
+\`\`\`
+gstack-version: ${LATEST}
+synced-at: $(date +%Y-%m-%d)
+\`\`\`
+"
