@@ -40,6 +40,9 @@ gstack 是一套运行在 **Claude Code** 上的 AI 工作流技能集合，MIT 
 |------|------|
 | [architecture.md](./docs/architecture.md) | 架构解读：无头浏览器守护进程、Bun 选型、模板系统 |
 | [how-skills-work.md](./docs/how-skills-work.md) | 技能模板系统深度解析：9 个模板变量全解读 |
+| [browse-daemon.md](./docs/browse-daemon.md) | Browse 守护进程源码深度解读：端口发现、@ref 系统、环形缓冲区 |
+| [design-binary.md](./docs/design-binary.md) | Design 二进制源码深度解读：GPT Image API、多轮迭代、比较板 |
+| [template-pipeline.md](./docs/template-pipeline.md) | 模板编译管线：.tmpl → 9 个 AI 平台的 SKILL.md |
 
 ### 全部 37 个技能注解
 
