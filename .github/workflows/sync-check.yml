@@ -91,6 +91,7 @@ ${CHANGED_LIST}
 - [ ] Review changed \`.tmpl\` files above
 - [ ] Update corresponding annotation docs in \`docs/skills/\`
 - [ ] Update \`SYNC.md\` with new version and date
+- [ ] Tag the release: \`git tag -a ${LATEST} -m \"Sync with gstack ${LATEST}\" && git push origin ${LATEST}\`
 - [ ] Close this issue
 
 **After syncing:** Update \`SYNC.md\`:
