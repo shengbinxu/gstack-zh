@@ -44,7 +44,7 @@ gstack 是一套运行在 **Claude Code** 上的 AI 工作流技能集合，MIT 
 | [design-binary.md](./docs/design-binary.md) | Design 二进制源码深度解读：GPT Image API、多轮迭代、比较板 |
 | [template-pipeline.md](./docs/template-pipeline.md) | 模板编译管线：.tmpl → 9 个 AI 平台的 SKILL.md |
 
-### 全部 37 个技能注解
+### 全部 38 个技能注解
 
 #### 产品与策略
 
@@ -86,6 +86,7 @@ gstack 是一套运行在 **Claude Code** 上的 AI 工作流技能集合，MIT 
 | 技能 | 注解 | 一句话说明 |
 |------|------|-----------|
 | `/investigate` | [注解](./docs/skills/investigate.md) | 系统性根因调试 |
+|| `/pair-agent` | [注解](./docs/skills/pair-agent.md) | 启动配对 AI 协作调试 |
 
 #### 发布与部署
 
@@ -153,12 +154,37 @@ gstack 是一套运行在 **Claude Code** 上的 AI 工作流技能集合，MIT 
 
 ---
 
-## 同步状态
+## 同步状态与版本管理
 
 当前对应 gstack 版本：见 [SYNC.md](./SYNC.md)
 
+**版本策略**：本仓库 tag 与 gstack 源库一一对应。`v0.15.15.0` 对应 gstack `v0.15.15.0`，以此类推。
+
+### 上游新版发布后的更新流程
+
+```
+gstack 发布新 release
+       │
+       ▼
+GitHub Actions 每日检测（UTC 08:00）
+       │
+       ▼
+自动创建 Issue："Sync: gstack vX.Y.Z released"
+列出所有变更的 .tmpl 文件
+       │
+       ▼
+人工处理：
+  1. 查看 Issue 中的变更文件列表
+  2. 对比两个 tag 之间的 diff
+  3. 更新涉及的 docs/skills/*.md 注解
+  4. 更新 SYNC.md（版本号 + 日期）
+  5. commit & push
+  6. 打 tag：git tag -a vX.Y.Z -m "Sync with gstack vX.Y.Z"
+             git push origin vX.Y.Z
+  7. 关闭 Issue
+```
+
 本仓库跟随 gstack minor/major 版本发布更新（~每 1-2 周一次）。
-GitHub Actions 自动监听上游发版，开 issue 提醒同步。
 
 ---
 
