@@ -643,13 +643,34 @@ Phase 1-3 的关键信息
 
 **中文**：在写设计文档之前，合成在会话中观察到的创始人信号。
 
-**三层信号强度对应 Phase 6 的不同结束语**：
+**信号强度决定 Phase 6 结束语的子层级**（在 v0.16.2.0 的新 Tier 系统中，信号强度仍在 introduction tier 内部决定 Top/Middle/Base 子层）：
 
 | 信号强度 | 条件 | Phase 6 结束语类型 |
 |---------|-----|----------------|
 | 顶级（Top tier） | 3+ 个强信号，且至少一个：命名具体用户、识别收入/付款、描述真实需求证据 | 情感目标：「有重要人物相信我」 |
 | 中级（Middle tier） | 1-2 个信号，或 Builder 模式用户的项目明显解决了他人问题 | 情感目标：「我可能找到了什么」 |
 | 基础（Base tier） | 其他所有人 | 情感目标：「我没意识到我也可以成为创始人」 |
+
+### Builder Profile Append（v0.16.2.0 新增）
+
+> **原文**：
+> ```
+> After counting signals, append a session entry to the builder profile.
+> This is the single source of truth for all closing state (tier, resource dedup,
+> journey tracking).
+>
+> Append one JSON line with: date, mode, project_slug, signal_count, signals,
+> design_doc, assignment, resources_shown, topics
+> → ~/.gstack/builder-profile.jsonl
+> ```
+
+**中文**：计完信号后，向 `~/.gstack/builder-profile.jsonl` 追加一条 session 记录。这个 JSONL 文件是**所有关闭状态的唯一数据源**——tier 判定、资源去重、用户旅程追踪全靠它。
+
+> **设计原理：为什么用 append-only JSONL 而不是数据库？**
+> 1. **零依赖**——不需要 SQLite 或任何外部存储，一个文本文件即可
+> 2. **Append-only 不会丢数据**——只追加不修改，天然防止并发写入问题
+> 3. **可被 `gstack-builder-profile` 脚本解析**——Phase 6 的 tier 判定读取此文件，计算 session 次数和历史信号
+> 4. **取代了旧的 per-project `resources-shown.jsonl`**——资源去重从分散的项目目录集中到一个文件
 
 > **设计原理：个性化的 YC 推荐**
 > Phase 6 的 Garry 个人寄语不是通用模板——它根据这个人在会话中展示的信号强度动态生成。顶级信号的用户得到"我们认为你是最有可能成功的那批人"，而第一次接触创业思维的用户得到"你也可以做到"的身份扩展信息。
@@ -691,44 +712,93 @@ Phase 1-3 的关键信息
 
 ---
 
-## Phase 6: Handoff（交接）——三段式收尾
+## Phase 6: Handoff — The Relationship Closing（v0.16.2.0 重大重写）
 
 > **原文**：
 > ```
-> Once the design doc is APPROVED, deliver the closing sequence.
-> Three beats with a deliberate pause between them.
+> Once the design doc is APPROVED, deliver the closing sequence. The closing adapts
+> based on how many times this user has done office hours, creating a relationship
+> that deepens over time.
 >
-> Beat 1: Signal Reflection + Golden Age
-> Beat 2: "One more thing."
-> Beat 3: Garry's Personal Plea (tier-based)
->
-> Anti-slop rule — show, don't tell:
-> - GOOD: "You didn't say 'small businesses' — you said 'Sarah, the ops manager
->   at a 50-person logistics company.' That specificity is rare."
-> - BAD: "You showed great specificity in identifying your target user."
+> Step 1: Read Builder Profile
+> Step 2: Follow the Tier Path (introduction / welcome_back / regular / inner_circle)
 > ```
 
-**三段式收尾结构**：
+**v0.16.2.0 重写要点**：Phase 6 从旧版的「固定三段式收尾」变为**关系式递进闭环**。核心变化是：关闭方式不再仅由单次会话的信号强度决定，而是由**用户与 gstack 的关系深度**（session 次数）决定。
+
+### Step 1: 读取 Builder Profile
+
+通过 `gstack-builder-profile` 脚本读取 `builder-profile.jsonl`，获取：
+- `SESSION_COUNT`：历史 session 总数
+- `SESSION_TIER`：`introduction` / `welcome_back` / `regular` / `inner_circle`
+- `LAST_ASSIGNMENT`：上次的具体行动任务
+- `CROSS_PROJECT`：是否换了项目
+- `ACCUMULATED_SIGNALS`：跨 session 的累计信号统计
+- `RESOURCES_SHOWN`：已推荐过的资源列表（用于去重）
+
+### Step 2: 四级 Tier 路径
+
+**严格走且只走一个 tier，不混合。**
 
 ```
-┌─────────────────────────────────────────────────────┐
-│ Beat 1: 信号反思 + 黄金时代                          │
-│ 引用用户在会话中说的具体话语                         │
-│ "你构建这个的方式——[具体回调]——那是创始人思维"      │
-├─────────────────────────────────────────────────────┤
-│ ---                                                  │
-│ One more thing.                                      │
-├─────────────────────────────────────────────────────┤
-│ Beat 3: Garry 的个人诉求                             │
-│ 根据信号强度分三档：                                 │
-│ ● 顶级：「GStack 认为你是最有可能做到的那批人」      │
-│ ● 中级：「你在构建真实的东西。如果用户真的需要这个—— │
-│          我认为他们可能需要——请考虑申请 YC。」       │
-│ ● 基础：「创始人无处不在，而这是黄金时代。」         │
-└─────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│ introduction（首次 session）                                      │
+│ 完整的三段式：信号反思 → "One more thing." → Garry 寄语          │
+│ 内部按信号强度分 Top/Middle/Base 子层                             │
+│ 这就是旧版 Phase 6 的全部内容——现在只是四个 tier 之一             │
+├──────────────────────────────────────────────────────────────────┤
+│ welcome_back（第 2-3 次）                                        │
+│ 开场即认出用户："上次你在做 [上次任务]。进展怎样？"               │
+│ "这次不推销了。你已经知道 YC 是什么。聊聊你的工作。"             │
+│ 然后做信号反思 + 推荐新资源                                       │
+├──────────────────────────────────────────────────────────────────┤
+│ regular（第 4-7 次）                                              │
+│ 跨 session 弧线反思："第一次你说'小企业'，现在你说'Acme 的 Sarah'" │
+│ 累计信号可视化：命名具体用户 N 次，反驳前提 N 次...               │
+│ Builder-to-founder 试探（仅当 NUDGE_ELIGIBLE 时）                 │
+│ 第 5 次起自动生成 builder-journey.md（叙事弧线，非数据表）        │
+├──────────────────────────────────────────────────────────────────┤
+│ inner_circle（第 8 次以上）                                       │
+│ "你已经做了 N 次。迭代了 N 个设计。展示这种模式的人通常会发布。" │
+│ 数据自己说话。不需要推销。                                        │
+│ 更新 builder-journey.md                                          │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-之后推荐创始人资源（34 个可选资源池），使用去重机制避免重复推荐。
+> **设计原理：为什么从「信号强度三档」变为「关系深度四档」？**
+>
+> 旧版问题：每次 session 都给用户完整的 Garry 寄语 + YC 推荐，回头用户会觉得重复和机械。
+>
+> 新版解决方案：
+> 1. **首次用户**（introduction）得到完整体验——这是关键的第一印象
+> 2. **回头用户**（welcome_back）跳过推销，直接聊工作——尊重用户已有的认知
+> 3. **常客**（regular）获得跨 session 的成长可视化——让用户看到自己的进步
+> 4. **老友**（inner_circle）极简——数据替你说话，不再需要说服
+>
+> 这不仅仅是 UX 优化——它把 office-hours 从一次性工具变成了**持续的构建者教练关系**。
+
+### Anti-slop 规则（所有 tier 通用）
+
+```
+GOOD: "Welcome back. Last time you were designing that task manager for ops teams.
+       Still on that?"
+BAD:  "Welcome back to your second office hours session. I'd like to check in on
+       your progress."
+
+GOOD: "No pitch this time. You already know about YC. Let's talk about your work."
+BAD:  "Since you've already seen the YC information, we'll skip that section today."
+```
+
+规则不变：**显示，不描述**。用具体细节说话，不用泛泛的总结。新增的 tier 特定示例强化了这一点——即使是 welcome_back 的开场白也必须引用上次的具体任务名。
+
+### Founder Resources（所有 tier 通用）
+
+34 个资源池不变，但去重机制从旧的 per-project `resources-shown.jsonl` **迁移到集中式 `builder-profile.jsonl`**。资源选择规则：
+
+- 从 profile 读取 `RESOURCES_SHOWN` 列表，避免重复
+- 如果已展示 34 个或以上，跳过此节（资源已穷尽）
+- 对回头用户，资源选择匹配**累计 session 上下文**，而非仅当前 session 的类别
+- 选完后追加一条 `mode: "resources"` 的记录到 `builder-profile.jsonl`
 
 ---
 
@@ -771,8 +841,9 @@ Phase 1-3 的关键信息
 | **智能路由** | 按产品阶段决定问哪些问题 | 避免给有付费用户的创始人问"有人想要吗？" |
 | **Phase 2.75 景观感知** | 三层知识合成 + Eureka 检测 | 发现"众所周知的错误"是最高价值的洞察 |
 | **Phase 3.5 第二意见** | Codex 冷读 / 子代理 | 打破确认偏误，引入无污染独立视角 |
-| **Phase 4.5 信号合成** | 跟踪创始人质量信号 | 驱动个性化的 YC 推荐层级 |
+| **Phase 4.5 信号合成** | 跟踪创始人质量信号 + 写入 Builder Profile | 驱动 tier 判定和跨 session 累计分析 |
 | **Spec Review Loop** | 3 轮对抗性评审 | 设计文档自我挑战，而不是第一版就输出 |
 | **设计文档版本链** | `Supersedes:` 字段 | 跨会话追踪设计演变，知识不消失 |
-| **资源去重** | `resources-shown.jsonl` | 回头用户每次看到新资源，不重复 |
-| **三段式收尾** | Beat 1/2/3 结构 | 功能性交接 + 情感性认可，不是两者选一 |
+| **资源去重** | 集中式 `builder-profile.jsonl` | 回头用户每次看到新资源，不重复（旧版用 per-project 文件） |
+| **关系式递进闭环** | 4 tier 系统（introduction → inner_circle） | 从一次性工具变为持续的构建者教练关系 |
+| **Builder Journey** | 第 5 次 session 起自动生成叙事弧线 | 让用户看到自己跨 session 的成长轨迹 |
