@@ -73,30 +73,33 @@ jobs:
           CHANGED_COUNT="${{ steps.diff.outputs.count }}"
           CHANGED_LIST=$(cat changed.txt 2>/dev/null || echo "(diff unavailable)")
 
+          {
+            echo "## gstack upstream update detected"
+            echo ""
+            echo "**Previous version:** \`${LAST_VER}\`"
+            echo "**New version:** \`${LATEST}\`"
+            echo "**Changed template files:** ${CHANGED_COUNT}"
+            echo ""
+            echo '```'
+            echo "${CHANGED_LIST}"
+            echo '```'
+            echo ""
+            echo "## Checklist"
+            echo ""
+            echo "- [ ] Review changed \`.tmpl\` files above"
+            echo "- [ ] Update corresponding annotation docs in \`docs/skills/\`"
+            echo "- [ ] Update \`SYNC.md\` with new version and date"
+            echo "- [ ] Tag the release: \`git tag -a ${LATEST} -m \"Sync with gstack ${LATEST}\" && git push origin ${LATEST}\`"
+            echo "- [ ] Close this issue"
+            echo ""
+            echo "**After syncing:** Update \`SYNC.md\`:"
+            echo '```'
+            echo "gstack-version: ${LATEST}"
+            echo "synced-at: $(date +%Y-%m-%d)"
+            echo '```'
+          } > /tmp/issue-body.md
+
           gh issue create \
             --title "Sync: gstack ${LATEST} released (was ${LAST_VER})" \
             --label "sync" \
-            --body "## gstack upstream update detected
-
-**Previous version:** \`${LAST_VER}\`
-**New version:** \`${LATEST}\`
-**Changed template files:** ${CHANGED_COUNT}
-
-\`\`\`
-${CHANGED_LIST}
-\`\`\`
-
-## Checklist
-
-- [ ] Review changed \`.tmpl\` files above
-- [ ] Update corresponding annotation docs in \`docs/skills/\`
-- [ ] Update \`SYNC.md\` with new version and date
-- [ ] Tag the release: \`git tag -a ${LATEST} -m \"Sync with gstack ${LATEST}\" && git push origin ${LATEST}\`
-- [ ] Close this issue
-
-**After syncing:** Update \`SYNC.md\`:
-\`\`\`
-gstack-version: ${LATEST}
-synced-at: $(date +%Y-%m-%d)
-\`\`\`
-"
+            --body-file /tmp/issue-body.md
