@@ -97,7 +97,7 @@ scripts/gen-skill-docs.ts
    └── Repo 所有权规则（越界问题如何处理）
 ```
 
-**设计意图**：每个技能都有标准化的启动行为，无需重复编写。`preamble-tier` 控制注入哪些层级（1=最简，4=完整）。
+**设计意图**：每个技能都有标准化的启动行为，无需重复编写。`preamble-tier` 控制注入哪些层级（1=最简，4=完整）。详见下方 [Frontmatter 字段说明](#frontmatter-字段说明) 中的分级表格。
 
 ---
 
@@ -341,10 +341,17 @@ allowed-tools:                 # 允许使用的工具白名单
 ```
 
 **`preamble-tier` 的含义**：
-- Tier 1：只有基础初始化，无交互提示
-- Tier 2：加入更新检查
-- Tier 3：加入遥测/proactive/routing 等一次性引导（大多数技能用这个）
-- Tier 4：加入 vendoring 弃用警告等
+
+`preamble-tier` 控制 `{{PREAMBLE}}` 注入的内容丰富程度，tier 越高越完整：
+
+| Tier | 包含内容 | 典型技能 |
+|------|---------|---------|
+| **1** | 仅基础 bash 初始化，无任何交互提示 | 轻量工具类 |
+| **2** | + gstack 更新检查 | 简单分析类 |
+| **3** | + 一次性用户引导（遥测许可、proactive 行为、routing 规则注入） | 大多数技能（`/plan-eng-review`、`/qa` 等） |
+| **4** | + session 追踪、vendored 安装弃用警告、完整 "Boil the Lake" 原则 | 关键路径技能（`/review`、`/ship`） |
+
+**为什么要分级？** 轻量技能无需每次都运行完整的初始化流程；而 `/review`、`/ship` 是代码入库前的最后关口，出错成本最高，值得注入所有安全网。Tier 越高，启动时的上下文越完整，同时也意味着稍多的 token 消耗。
 
 ---
 
