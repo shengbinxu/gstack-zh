@@ -165,6 +165,8 @@ $B 命令树
 │   └── url             ← 当前 URL
 │
 ├── 读取 (Reading)
+│   ├── data [--jsonld|--og|--meta|--twitter]  ← 结构化数据
+│   ├── media [--images|--videos|--audio] [sel] ← 媒体元素
 │   ├── text            ← 页面纯文本
 │   ├── html [sel]      ← 页面 HTML
 │   ├── links           ← 所有链接
@@ -208,6 +210,11 @@ $B 命令树
 │       ├── -C (cursor)
 │       ├── -s (selector)
 │       └── -d (depth)
+│
+├── 提取 (Extraction)
+│   ├── archive [path]                      ← 保存页面为 MHTML（via CDP）
+│   ├── download <url|@ref> [path] [--base64] ← 下载 URL 或媒体元素到磁盘
+│   └── scrape <images|videos|media> [opts] ← 批量下载页面媒体
 │
 └── 服务器/标签 (Meta)
     ├── tabs / tab / newtab / closetab
@@ -609,6 +616,59 @@ $B prettyscreenshot --cleanup --scroll-to ".pricing" --width 1440 ~/Desktop/hero
 
 ---
 
+## 结构化数据与媒体读取命令（新增）
+
+> **原文**：
+> ```
+> | `data [--jsonld|--og|--meta|--twitter]` | Structured data: JSON-LD, Open Graph, Twitter Cards, meta tags |
+> | `media [--images|--videos|--audio] [selector]` | All media elements (images, videos, audio) with URLs, dimensions, types |
+> | `text` | Cleaned page text |
+> ```
+
+### `data` 命令
+
+| 标志 | 说明 |
+|------|------|
+| （无标志）| 返回所有结构化数据（JSON-LD + OG + meta + Twitter Cards） |
+| `--jsonld` | 只提取 JSON-LD 脚本块（`<script type="application/ld+json">`） |
+| `--og` | 只提取 Open Graph 标签（`og:title`, `og:description`, `og:image` 等） |
+| `--meta` | 只提取标准 meta 标签（description、keywords、author 等） |
+| `--twitter` | 只提取 Twitter Card 标签（`twitter:card`, `twitter:title` 等） |
+
+**适用场景**：SEO 审计、抓取结构化数据（电商商品信息、文章元数据、FAQ schema）。
+
+```bash
+# 检查文章页的 SEO 元数据
+$B goto https://blog.example.com/post/123
+$B data --jsonld     # 查看 Article schema（标题、作者、发布时间）
+$B data --og         # 查看社交分享预览数据
+```
+
+### `media` 命令
+
+| 标志 | 说明 |
+|------|------|
+| （无标志）| 返回页面所有媒体元素（图片 + 视频 + 音频），含 URL、尺寸、类型 |
+| `--images` | 只看图片元素 |
+| `--videos` | 只看视频元素 |
+| `--audio` | 只看音频元素 |
+| `[selector]` | 可选：限定 CSS 选择器范围（如只看 `.gallery` 内的媒体） |
+
+**适用场景**：检查页面图片是否全部加载、视频是否正确嵌入、找出 broken image。
+
+```bash
+# 检查产品页面的所有图片
+$B goto https://shop.example.com/product/1
+$B media --images                 # 列出所有图片 URL + 尺寸
+$B media --images ".product-gallery"  # 只看产品相册区域的图片
+```
+
+> **设计原理：data/media 是"读取"而非"提取"**
+> `data` 和 `media` 返回的是**文本描述**（JSON 数据、URL 列表），不会写磁盘文件。
+> 要真正下载这些内容，需要配合 `download` 或 `scrape` 命令（见 Extraction 章节）。
+
+---
+
 ## 安全机制：不信任外部内容
 
 > **原文（第 655-663 行）**：
@@ -907,6 +967,18 @@ $B is visible ".success-message"      # 是否可见？
 $B is enabled "#submit-button"        # 是否可点击？
 $B js "document.title === 'Home'"     # 自定义 JS 断言
 
+# 读取结构化数据
+$B data                                # 全部结构化数据
+$B data --jsonld                       # 只提取 JSON-LD
+$B data --og                           # 只提取 Open Graph 标签
+$B data --meta                         # 只提取 meta tags
+$B data --twitter                      # 只提取 Twitter Card 标签
+
+# 读取媒体元素
+$B media                               # 页面所有媒体（图片+视频+音频）
+$B media --images                      # 只看图片
+$B media --videos ".player"           # 限定选择器范围
+
 # 调试
 $B console                             # JS 控制台错误
 $B network                             # 网络请求
@@ -945,6 +1017,80 @@ $B resume
 # 干净截图
 $B cleanup --all
 $B prettyscreenshot --cleanup --width 1440 ~/Desktop/hero.png
+
+# 提取（Extraction）
+$B archive /tmp/page.mhtml                     # 保存完整页面为 MHTML
+$B download https://example.com/img.jpg /tmp/  # 用浏览器 cookies 下载 URL
+$B download @e5 /tmp/                          # 下载 @ref 引用的媒体元素
+$B scrape images --dir /tmp/imgs --limit 20    # 批量下载页面图片
+$B scrape videos --selector ".gallery"         # 批量下载指定范围内的视频
+```
+
+---
+
+## Extraction 命令：页面内容保存与批量下载
+
+> **原文**：
+> ```
+> ### Extraction
+> | Command | Description |
+> |---------|-------------|
+> | `archive [path]` | Save complete page as MHTML via CDP |
+> | `download <url|@ref> [path] [--base64]` | Download URL or media element to disk using browser cookies |
+> | `scrape <images|videos|media> [--selector sel] [--dir path] [--limit N]` | Bulk download all media from page. Writes manifest.json |
+> ```
+
+**中文翻译**：
+
+| 命令 | 说明 |
+|------|------|
+| `archive [path]` | 用 CDP 协议将完整页面保存为 MHTML 格式 |
+| `download <url\|@ref> [path] [--base64]` | 使用当前浏览器 cookies 将 URL 或媒体元素下载到磁盘 |
+| `scrape <images\|videos\|media> [--selector sel] [--dir path] [--limit N]` | 批量下载页面全部媒体文件，生成 manifest.json |
+
+**设计解读**：
+
+```
+Extraction 命令解决了三个不同层次的"内容保存"需求：
+
+archive —— 页面级保存
+  MHTML（MIME HTML）是把整个页面（HTML + CSS + 图片 + 字体）
+  打包成单文件的格式。通过 Chrome DevTools Protocol（CDP）实现，
+  比 wget 镜像更准确——保留了浏览器渲染后的状态。
+  适合：存档、离线浏览、legal discovery
+
+download —— 单资源下载
+  关键设计：使用"浏览器 cookies"下载，解决了需要登录才能访问的资源问题。
+  普通的 curl/wget 不带 session cookies，遇到认证就失败。
+  download 命令复用了浏览器已有的登录状态。
+  支持 --base64：当下载目标是内嵌数据时（data: URI），
+  输出 Base64 编码而不是写文件。
+
+scrape —— 批量媒体下载
+  三种目标类型：images / videos / media（全部）
+  --selector：限定范围（只抓 .gallery 内的图片）
+  --dir：指定保存目录
+  --limit：最多下载 N 个文件
+  manifest.json：下载完成后自动生成清单文件，记录每个文件的
+    原始 URL、本地路径、文件大小、媒体类型
+
+  典型场景：
+    $B scrape images --dir /tmp/imgs --limit 50
+    → 下载页面前 50 张图片到 /tmp/imgs/
+    → 生成 /tmp/imgs/manifest.json（便于后续处理）
+```
+
+**与 `data` 和 `media` 读取命令的对比**：
+
+```
+data/media（读取）：
+  $B data --jsonld     → 只返回文本数据（JSON 字符串）
+  $B media --images    → 返回图片 URL 列表（不下载文件）
+
+archive/download/scrape（提取）：
+  $B archive           → 真正保存文件到磁盘
+  $B download @e5      → 真正下载媒体文件到磁盘
+  $B scrape images     → 真正批量下载所有图片到磁盘
 ```
 
 ---

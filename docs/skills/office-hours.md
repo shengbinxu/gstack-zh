@@ -740,6 +740,31 @@ Phase 1-3 的关键信息
 
 **严格走且只走一个 tier，不混合。**
 
+> **原文**：
+> ```
+> SESSION_TIER: introduction
+>   The full 3-beat structure (signal reflection → "One more thing." → Garry's YC plea)
+>   Sub-tier by signal count: Top (3+ strong signals) / Middle (1-2) / Base (0)
+>
+> SESSION_TIER: welcome_back (sessions 2-3)
+>   Open by recognizing them: "Last time you were working on X. How's that going?"
+>   Skip the YC pitch. They already know. Focus on the work.
+>   Signal reflection + new resources.
+>
+> SESSION_TIER: regular (sessions 4-7)
+>   Name the arc: "First time you said 'small businesses'. Now you say 'Acme's Sarah'."
+>   Show accumulated signal pattern (named specific users N times, pushed back N times, etc.)
+>   Builder-to-founder nudge if NUDGE_ELIGIBLE.
+>   Session 5+: auto-generate builder-journey.md (narrative arc, not data table).
+>
+> SESSION_TIER: inner_circle (sessions 8+)
+>   "You've done this N times. Iterated N designs. People who show this pattern ship."
+>   Let the data speak. No pitch needed.
+>   Update builder-journey.md.
+> ```
+
+**中文**：
+
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │ introduction（首次 session）                                      │
@@ -779,19 +804,39 @@ Phase 1-3 的关键信息
 
 ### Anti-slop 规则（所有 tier 通用）
 
-```
-GOOD: "Welcome back. Last time you were designing that task manager for ops teams.
-       Still on that?"
-BAD:  "Welcome back to your second office hours session. I'd like to check in on
-       your progress."
+> **原文**：
+> ```
+> GOOD: "Welcome back. Last time you were designing that task manager for ops teams.
+>        Still on that?"
+> BAD:  "Welcome back to your second office hours session. I'd like to check in on
+>        your progress."
+>
+> GOOD: "No pitch this time. You already know about YC. Let's talk about your work."
+> BAD:  "Since you've already seen the YC information, we'll skip that section today."
+> ```
 
-GOOD: "No pitch this time. You already know about YC. Let's talk about your work."
-BAD:  "Since you've already seen the YC information, we'll skip that section today."
-```
+**中文**：
 
-规则不变：**显示，不描述**。用具体细节说话，不用泛泛的总结。新增的 tier 特定示例强化了这一点——即使是 welcome_back 的开场白也必须引用上次的具体任务名。
+- **GOOD**："欢迎回来。上次你在设计那个给运营团队用的任务管理器，还在做吗？"
+- **BAD**："欢迎回到你的第二次 office hours 会话。我想来跟进一下你的进展。"
+
+- **GOOD**："这次不推销了。你已经知道 YC 是什么。聊聊你的工作。"
+- **BAD**："由于你已经看过 YC 的信息，今天我们就跳过那部分。"
+
+规则不变：**显示，不描述**。用具体细节说话，不用泛泛的总结。新增的 tier 特定示例强化了这一点——即使是 welcome_back 的开场白也必须引用上次的具体任务名，而不是泛泛地说"第二次 session"。
 
 ### Founder Resources（所有 tier 通用）
+
+> **原文**：
+> ```
+> Founder Resources: read RESOURCES_SHOWN from builder-profile (not per-project
+> resources-shown.jsonl — that file is deprecated). Pick resources not already shown.
+> If 34+ already shown, skip this section entirely.
+> For returning users, match resources to accumulated session context, not just
+> the current session's topics.
+> ```
+
+**中文**：从 `builder-profile.jsonl` 读取 `RESOURCES_SHOWN`（旧版的 per-project `resources-shown.jsonl` 已废弃）。选择尚未推荐过的资源。如果已展示 34 个以上，跳过此节。对回头用户，资源选择基于**累计 session 上下文**，而非仅当前 session 的话题。
 
 34 个资源池不变，但去重机制从旧的 per-project `resources-shown.jsonl` **迁移到集中式 `builder-profile.jsonl`**。资源选择规则：
 
@@ -799,6 +844,11 @@ BAD:  "Since you've already seen the YC information, we'll skip that section tod
 - 如果已展示 34 个或以上，跳过此节（资源已穷尽）
 - 对回头用户，资源选择匹配**累计 session 上下文**，而非仅当前 session 的类别
 - 选完后追加一条 `mode: "resources"` 的记录到 `builder-profile.jsonl`
+
+> **设计原理：去中心化 → 集中化的迁移**
+> 旧版为每个项目目录维护一个 `resources-shown.jsonl`（`~/.gstack/projects/<slug>/resources-shown.jsonl`）。
+> 问题：用户切换项目后，资源去重信息丢失，会重复推荐同样的资源。
+> 新版将所有推荐历史集中到 `~/.gstack/builder-profile.jsonl`，跨 session、跨项目统一去重。
 
 ---
 

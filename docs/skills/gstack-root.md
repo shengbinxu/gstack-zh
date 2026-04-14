@@ -484,6 +484,8 @@ $B snapshot -s "#checkout-form" -i
 
 | 命令 | 说明 |
 |------|------|
+| `$B data [--jsonld\|--og\|--meta\|--twitter]` | 结构化数据：JSON-LD、Open Graph、Twitter Cards、meta 标签 |
+| `$B media [--images\|--videos\|--audio] [selector]` | 所有媒体元素（图片、视频、音频），含 URL、尺寸、类型 |
 | `$B text` | 提取页面清理后的纯文本 |
 | `$B html [sel]` | 获取选择器对应元素的 innerHTML（无 sel 则返回整页 HTML） |
 | `$B links` | 所有链接（格式：`text → href`） |
@@ -549,6 +551,41 @@ $B snapshot -s "#checkout-form" -i
 | `checked` | checkbox/radio 已选中 |
 | `editable` | 输入框可编辑（非 readonly） |
 | `focused` | 元素当前拥有焦点 |
+
+### 11.7.5 提取命令（Extraction）
+
+> **原文**：
+> ```
+> ### Extraction
+> | Command | Description |
+> |---------|-------------|
+> | `archive [path]` | Save complete page as MHTML via CDP |
+> | `download <url|@ref> [path] [--base64]` | Download URL or media element to disk using browser cookies |
+> | `scrape <images|videos|media> [--selector sel] [--dir path] [--limit N]` | Bulk download all media from page. Writes manifest.json |
+> ```
+
+**中文**：
+
+| 命令 | 说明 |
+|------|------|
+| `$B archive [path]` | 用 CDP 将完整页面（HTML + 资源）保存为 MHTML 单文件 |
+| `$B download <url\|@ref> [path] [--base64]` | 使用浏览器 cookies 下载 URL 或媒体元素到磁盘 |
+| `$B scrape <images\|videos\|media> [--selector sel] [--dir path] [--limit N]` | 批量下载页面全部媒体文件，完成后写入 manifest.json |
+
+**设计解读**：Extraction 命令是真正将页面内容写入磁盘的命令，与 `data`/`media`（只返回文本数据）形成对比。
+
+- **`archive`**：MHTML 格式将整个页面（含内联资源）打包为单文件，使用 Chrome DevTools Protocol 捕获，保真度高于 wget 镜像。
+- **`download`**：复用浏览器当前的 session cookies，解决需要认证才能访问的资源的下载问题；`--base64` 选项支持内嵌 `data:` URI 的输出。
+- **`scrape`**：批量下载场景，`--limit` 防止无限下载，`manifest.json` 记录原始 URL → 本地路径的映射，便于后续处理。
+
+```bash
+# 典型用法
+$B archive /tmp/page.mhtml                      # 存档整页
+$B download @e5 /tmp/video.mp4                  # 下载 @ref 引用的视频
+$B download https://cdn.example.com/img.png /tmp/ # 带 cookie 下载受保护图片
+$B scrape images --dir /tmp/imgs --limit 50     # 批量下载前 50 张图片
+$B scrape media --selector ".gallery"           # 只抓 .gallery 内所有媒体
+```
 
 ### 11.8 视觉命令（Visual）
 
