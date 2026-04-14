@@ -16,100 +16,121 @@ jobs:
       - name: Checkout gstack-zh (for SYNC.md)
         uses: actions/checkout@v4
 
-      - name: Read last synced version
+      - name: Read last synced state
         id: last
         run: |
           LAST_VER=$(grep 'gstack-version' SYNC.md | cut -d' ' -f2)
+          LAST_SHA=$(grep 'upstream-sha' SYNC.md | cut -d' ' -f2)
           echo "version=$LAST_VER" >> "$GITHUB_OUTPUT"
-          echo "Last synced: $LAST_VER"
+          echo "sha=$LAST_SHA" >> "$GITHUB_OUTPUT"
+          echo "Last synced version: $LAST_VER"
+          echo "Last synced SHA: $LAST_SHA"
 
-      - name: Get latest upstream version from commit messages
-        id: latest
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # gstack embeds version in commit messages like "(v0.16.3.0)"
-          LATEST=$(gh api "repos/garrytan/gstack/commits?per_page=20" \
-            --jq '[.[] | .commit.message | capture("\\((?<ver>v[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)\\)") | .ver][0]')
-          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
-            echo "No version found in recent commits"
-            exit 1
-          fi
-          echo "version=$LATEST" >> "$GITHUB_OUTPUT"
-          echo "Latest upstream: $LATEST"
-
-      - name: Skip if already in sync
-        run: |
-          if [ "${{ steps.last.outputs.version }}" = "${{ steps.latest.outputs.version }}" ]; then
-            echo "Already in sync with ${{ steps.latest.outputs.version }}, nothing to do."
-            exit 0
-          fi
-          echo "New upstream version detected: ${{ steps.last.outputs.version }} -> ${{ steps.latest.outputs.version }}"
-
-      - name: Checkout upstream gstack (full history for commit-based diff)
-        if: steps.last.outputs.version != steps.latest.outputs.version
+      - name: Checkout upstream gstack (full history)
         uses: actions/checkout@v4
         with:
           repository: garrytan/gstack
           fetch-depth: 0
           path: upstream-gstack
 
-      - name: Compute changed template files
-        if: steps.last.outputs.version != steps.latest.outputs.version
+      - name: Get current upstream state
+        id: latest
+        run: |
+          cd upstream-gstack
+          HEAD_SHA=$(git rev-parse HEAD)
+          HEAD_MSG=$(git log -1 --pretty=%s)
+          # Extract version from latest commit message like "(v0.16.4.0)"
+          LATEST_VER=$(echo "$HEAD_MSG" | grep -oP '\(v[\d.]+\)' | tr -d '()' | head -1)
+          echo "sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "version=${LATEST_VER:-unknown}" >> "$GITHUB_OUTPUT"
+          echo "Current upstream SHA: $HEAD_SHA"
+          echo "Current upstream version: ${LATEST_VER:-unknown}"
+
+      - name: Skip if already in sync
+        id: check
+        run: |
+          if [ "${{ steps.last.outputs.sha }}" = "${{ steps.latest.outputs.sha }}" ]; then
+            echo "Already in sync with ${{ steps.latest.outputs.sha }}, nothing to do."
+            echo "in_sync=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "New commits detected: ${{ steps.last.outputs.sha }} -> ${{ steps.latest.outputs.sha }}"
+            echo "in_sync=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute changed files since last sync
+        if: steps.check.outputs.in_sync == 'false'
         id: diff
         run: |
           cd upstream-gstack
-          LAST_VER="${{ steps.last.outputs.version }}"
-          # Find commit SHA by version in commit message
-          LAST_SHA=$(git log --all --oneline --grep="(${LAST_VER})" --fixed-strings | head -1 | cut -d' ' -f1)
-          if [ -n "$LAST_SHA" ]; then
-            git diff "${LAST_SHA}..HEAD" --name-only -- '*.tmpl' '**/*.tmpl' > ../changed.txt 2>/dev/null || true
+          LAST_SHA="${{ steps.last.outputs.sha }}"
+
+          if git cat-file -e "${LAST_SHA}^{commit}" 2>/dev/null; then
+            # Diff from exact last-synced SHA to current HEAD
+            git diff "${LAST_SHA}..HEAD" --name-only > ../changed.txt 2>/dev/null || true
+            git log "${LAST_SHA}..HEAD" --oneline > ../commits.txt 2>/dev/null || true
           else
-            echo "(could not find commit for ${LAST_VER}, showing all .tmpl files)" > ../changed.txt
-            git ls-files '*.tmpl' '**/*.tmpl' >> ../changed.txt 2>/dev/null || true
+            echo "(last SHA not found — showing all files as changed)" > ../changed.txt
+            git ls-files >> ../changed.txt 2>/dev/null || true
+            echo "(SHA not found, full history shown)" > ../commits.txt
           fi
-          echo "Changed files:"
+
+          echo "=== Changed files ==="
           cat ../changed.txt
-          CHANGED=$(cat ../changed.txt | wc -l | tr -d ' ')
+          echo "=== Commits ==="
+          cat ../commits.txt
+
+          CHANGED=$(wc -l < ../changed.txt | tr -d ' ')
+          COMMIT_COUNT=$(wc -l < ../commits.txt | tr -d ' ')
           echo "count=$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
 
       - name: Open sync reminder issue
-        if: steps.last.outputs.version != steps.latest.outputs.version
+        if: steps.check.outputs.in_sync == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LAST_VER="${{ steps.last.outputs.version }}"
-          LATEST="${{ steps.latest.outputs.version }}"
+          LATEST_VER="${{ steps.latest.outputs.version }}"
+          LAST_SHA="${{ steps.last.outputs.sha }}"
+          LATEST_SHA="${{ steps.latest.outputs.sha }}"
           CHANGED_COUNT="${{ steps.diff.outputs.count }}"
+          COMMIT_COUNT="${{ steps.diff.outputs.commit_count }}"
           CHANGED_LIST=$(cat changed.txt 2>/dev/null || echo "(diff unavailable)")
+          COMMIT_LIST=$(cat commits.txt 2>/dev/null || echo "(unavailable)")
 
           {
             echo "## gstack upstream update detected"
             echo ""
-            echo "**Previous version:** \`${LAST_VER}\`"
-            echo "**New version:** \`${LATEST}\`"
-            echo "**Changed template files:** ${CHANGED_COUNT}"
+            echo "**Previous version:** \`${LAST_VER}\` (\`${LAST_SHA:0:8}\`)"
+            echo "**New version:** \`${LATEST_VER}\` (\`${LATEST_SHA:0:8}\`)"
+            echo "**Changed files:** ${CHANGED_COUNT}"
+            echo "**New commits:** ${COMMIT_COUNT}"
             echo ""
+            echo "## New commits"
+            echo '```'
+            echo "${COMMIT_LIST}"
+            echo '```'
+            echo ""
+            echo "## Changed files"
             echo '```'
             echo "${CHANGED_LIST}"
             echo '```'
             echo ""
             echo "## Checklist"
             echo ""
-            echo "- [ ] Review changed \`.tmpl\` files above"
+            echo "- [ ] Review changed files above, focus on \`.tmpl\` and \`SKILL.md\` files"
             echo "- [ ] Update corresponding annotation docs in \`docs/skills/\`"
-            echo "- [ ] Update \`SYNC.md\` with new version and date"
-            echo "- [ ] Tag the release: \`git tag -a ${LATEST} -m \"Sync with gstack ${LATEST}\" && git push origin ${LATEST}\`"
-            echo "- [ ] Close this issue"
-            echo ""
-            echo "**After syncing:** Update \`SYNC.md\`:"
+            echo "- [ ] Update \`SYNC.md\` with new version, date, and upstream SHA:"
             echo '```'
-            echo "gstack-version: ${LATEST}"
+            echo "gstack-version: ${LATEST_VER}"
             echo "synced-at: $(date +%Y-%m-%d)"
+            echo "upstream-sha: ${LATEST_SHA}"
             echo '```'
+            echo "- [ ] Tag the release: \`git tag -a ${LATEST_VER} -m \"Sync with gstack ${LATEST_VER}\" && git push origin ${LATEST_VER}\`"
+            echo "- [ ] Close this issue"
           } > /tmp/issue-body.md
 
           gh issue create \
-            --title "Sync: gstack ${LATEST} released (was ${LAST_VER})" \
+            --title "Sync: gstack ${LATEST_VER} (${LATEST_SHA:0:8}) — ${COMMIT_COUNT} new commits" \
             --label "sync" \
             --body-file /tmp/issue-body.md
