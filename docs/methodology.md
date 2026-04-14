@@ -30,29 +30,29 @@ IDEA
   │                                    6 个逼问诊断产品可行性
   │                                    → builder-profile.jsonl
   ▼
-CODE（写代码）
+PLAN（规划阶段：写设计文档、锁定架构）
   │
-  ├──► /plan-ceo-review ──────────────── 规划评审（可选，推荐）
-  │      范围决策：expansion/hold/reduction
-  │      → ceo-plans/$BRANCH-$TS.md
+  ├──► /plan-ceo-review ──────────────── 范围决策（可选，推荐）
+  │      expansion/hold/reduction 三种模式
+  │      → ceo-plans/{date}-{slug}.md
   │
   ├──► /plan-eng-review ──────────────── 架构评审（可选，推荐）
   │      架构锁定 + 测试规划
-  │      → test-plan-$TS.md
+  │      → {branch}-eng-review-test-plan-*.md
   │
   ├──► /plan-design-review ───────────── 设计评审（可选）
   │      视觉方向确认
-  │      → design-$TS.md
+  │      → designs/（目录）
   │
   ├──► /plan-devex-review ────────────── DX 评审（可选）
   │      开发者体验审计
   │
-  └──► /autoplan ─────────────────────── 一键跑完全部评审
-         自动决策 + taste gate
-         → reviews.jsonl 更新
+  ├──► /autoplan ─────────────────────── 一键跑完全部评审
+  │      自动决策 + taste gate（关键决策点仍需用户确认）
+  │      → reviews.jsonl 更新
   │
   ▼
-DEVELOPMENT（开发循环）
+DEVELOPMENT（开发循环：实现代码）
   │
   ├──► /qa ──────────────────────────── 运行时 QA 测试（可选）
   │      打开浏览器，系统性测试
@@ -70,8 +70,11 @@ DEVELOPMENT（开发循环）
   │
   ├── Step 1    Pre-flight + Readiness Dashboard
   ├── Step 2    Merge base branch
-  ├── Step 3    Run tests + coverage audit
+  ├── Step 3    Run tests（in-branch failures → STOP）
+  ├── Step 3.25 Eval suites（conditional，prompt 相关文件变更时）
+  ├── Step 3.4  Coverage audit（低于阈值 → STOP）
   ├── Step 3.45 Plan completion audit（P0 必须完成）
+  ├── Step 3.47 Plan verification（手动测试步骤验证）
   ├── Step 3.5  Pre-landing review（代码审查门禁）
   │             → AUTO-FIX（低风险自动修）
   │             → ASK（高风险问用户）
@@ -102,16 +105,16 @@ POST-SHIP（发布后）
 | `learnings.jsonl` | 所有 skill（显式调用 `gstack-learnings-log`） | 所有 skill（preamble 自动加载） | skill 完成时 | 跨 session 学习积累：patterns、pitfalls、preferences、架构决策 |
 | `timeline.jsonl` | 所有 skill（preamble 后台写入） | `/retro` | skill 开始/完成时 | 工作时间轴，非阻塞性日志 |
 | `$BRANCH-reviews.jsonl` | `/review`、`/ship`（`gstack-review-log`） | `/ship` step 1（`gstack-review-read`） | 评审完成时 | 预登陆评审历史，readiness dashboard 数据源 |
-| `ceo-plans/$BRANCH-$TS.md` | `/plan-ceo-review` | `/ship` step 1 dashboard | CEO review 完成时 | 范围决策记录 |
-| `test-plan-$TS.md` | `/plan-eng-review` | `/qa`、`/ship` step 3 | eng review 完成时 | 测试计划，QA 的主要输入 |
-| `design-$TS.md` | `/design-consultation`、`/design-shotgun` | `/plan-design-review`、`/ship` | design skill 完成时 | 设计方向记录 |
+| `ceo-plans/{date}-{slug}.md` | `/plan-ceo-review` | `/ship` step 1 dashboard | CEO review 完成时 | 范围决策记录 |
+| `{user}-{branch}-eng-review-test-plan-*.md` | `/plan-eng-review` | `/qa`、`/ship` step 3 | eng review 完成时 | 测试计划，QA 的主要输入 |
+| `designs/` （目录） | `/design-consultation`、`/design-shotgun` | `/plan-design-review` | design skill 完成时 | 设计方向记录，含 approved.json 等 |
 | `checkpoint-$TS.json` | `/checkpoint` | `/checkpoint`（resume） | 用户手动调用时 | 工作状态快照，跨 session 恢复 |
 
 ### 3.2 全局工件（`~/.gstack/`）
 
 | 工件 | 写入者 | 读取者 | 用途 |
 |------|-------|-------|------|
-| `builder-profile.jsonl` | `/office-hours` | `gstack-builder-profile` | 全局构建者档案：session 次数、tier、累积信号、资源展示历史 |
+| `builder-profile.jsonl` | `/office-hours` | `/office-hours`（通过 `gstack-builder-profile` 脚本读取，决定 tier 和个性化行为） | 全局构建者档案：session 次数、tier、累积信号、资源展示历史 |
 | `analytics/skill-usage.jsonl` | 所有 skill（preamble，仅在 telemetry 开启时） | `gstack-telemetry-sync` | 用户行为遥测 |
 | `sessions/$PPID` | 所有 skill（preamble touch） | preamble（统计活跃 session 数） | 轻量会话计数，2小时后自动过期 |
 | `config/` | `gstack-config set` | 所有 skill（preamble） | 用户偏好持久化（proactive、telemetry、routing 等） |
@@ -120,7 +123,7 @@ POST-SHIP（发布后）
 
 | 工件 | 写入者 | 读取者 | 写入时机 | 用途 |
 |------|-------|-------|---------|------|
-| `TODOS.md` | `/ship` step 5.5（自动标记完成项）、各 review skill（用户选 A 时） | `/ship` step 1.5、`/checkpoint`、`/review` | ship 时自动 + 评审后按需 | 项目待办事项，P0-P4 优先级，包含已完成区块 |
+| `TODOS.md` | `/ship` step 5.5（自动标记完成项）、各 review skill（用户选 A 时） | `/ship` step 3.48（范围漂移检测）、`/review` step 5.5、`/plan-eng-review` step 0 | ship 时自动 + 评审后按需 | 项目待办事项，P0-P4 优先级，包含已完成区块 |
 | `VERSION` | `/ship` step 4 | 所有 skill（preamble）、`/ship`、`/land-and-deploy` | 每次 ship 时 | 语义化版本号（MAJOR.MINOR.PATCH.MICRO） |
 | `CHANGELOG.md` | `/ship` step 5 | `/land-and-deploy`、发版 notes | 每次 ship 时 | 变更日志，从 diff 自动生成后追加 |
 | `CLAUDE.md` | 用户 + routing 注入（preamble） | Claude Code（对话开始时） | 初始化 + skill routing 配置时 | 项目级 Claude 指令，包含 skill routing 规则 |
@@ -147,6 +150,8 @@ POST-SHIP（发布后）
 
 /cso                      发现安全问题，用户选 D              带安全标签的条目
 
+/plan-devex-review        review 完成后，逐条 AskUserQuestion  DX 债务（选 A 时写入）
+
 /document-release Step 7  扫描 diff 里的 TODO/FIXME 注释      有价值的延迟工作（AskUserQuestion 后）
 ```
 
@@ -160,16 +165,15 @@ POST-SHIP（发布后）
 ```
 读取者                    读取时机                              用途
 ──────────────────────────────────────────────────────────────────────
-/ship step 1.5           pre-flight 检查时                   Scope Drift Detection：与 diff 比对
+/ship step 3.48          landing review 之前                 Scope Drift Detection：与 diff 比对
                                                               检测功能蔓延或需求缺失
 
 /review Step 5.5         review 过程中                       TODOS cross-reference：
                                                               - 此 PR 是否关闭了某个 TODO？
                                                               - 此 PR 是否产生了新的应该变 TODO 的工作？
 
-/plan-eng-review Step 0  开始前                              检测 deferred 项是否 blocking 此 plan
-
-/checkpoint              保存状态时                          记录当前 open TODO 状态到快照
+/plan-eng-review Step 0  scope challenge 阶段               检测 deferred 项是否 blocking 此 plan
+                                                              可顺带打包相关 TODO 到此 PR
 ```
 
 ---
@@ -184,7 +188,7 @@ POST-SHIP（发布后）
                     │  /plan-eng-review    │  → 架构 + 测试规划
                     │  /plan-design-review │  → 视觉方向
                     │  /plan-devex-review  │  → 开发者体验
-                    │  /autoplan           │  → 一键跑完所有 + taste gate
+                    │  /autoplan           │  → 一键跑完所有 + taste gate*
                     └──────────┬──────────┘
                                │ 产生 reviews.jsonl 条目
                                ▼
@@ -217,6 +221,8 @@ POST-SHIP（发布后）
                                ▼
                     reviews.jsonl 更新（/ship 的这次评审结果）
 ```
+
+**\* taste gate**：`/autoplan` 在跑完所有评审后，会对"scope expansion"、"架构选择"等主观决策点逐一询问用户确认，而非完全自动化。两个 AI 模型意见一致也不等于自动执行（User Sovereignty 原则）。
 
 **核心区别**：
 
@@ -287,12 +293,12 @@ user-stated   永不衰减                 用户明确陈述的始终有效
 
 ### Tier 系统
 
-| Tier | 触发条件 | /office-hours 的行为 |
-|------|---------|---------------------|
-| `introduction` | 第 1 次 | 完整 3-beat 结构 + YC plea |
-| `welcome_back` | 第 2-3 次 | 上次作业回顾 + 跳过 YC 推销 |
-| `regular` | 第 4-7 次 | 跨 session 信号模式分析 + builder-journey.md |
-| `inner_circle` | 第 8 次以上 | 数据说话，全量 accumulated signal 摘要 |
+| Tier | 触发条件（SESSION_COUNT） | /office-hours 的行为 |
+|------|--------------------------|---------------------|
+| `introduction` | 第 1 次（count=0） | 完整 3-beat 结构 + YC plea |
+| `welcome_back` | 第 2-4 次（count=1-3） | 上次作业回顾 + 跳过 YC 推销 |
+| `regular` | 第 5-8 次（count=4-7） | 跨 session 信号模式分析 + builder-journey.md |
+| `inner_circle` | 第 9 次以上（count≥8） | 数据说话，全量 accumulated signal 摘要 |
 
 这个系统让 AI 不会对同一个用户重复同样的入门体验——tier 越高，响应越像"老朋友"而非"新客户"。
 
@@ -300,13 +306,18 @@ user-stated   永不衰减                 用户明确陈述的始终有效
 
 ## 八、Preamble：所有 skill 的标准启动序列
 
-每个 skill 都从相同的 preamble 开始（`{{PREAMBLE}}` 模板变量展开后）：
+每个 skill 都从相同的 preamble 开始（`{{PREAMBLE}}` 模板变量展开后）。`preamble-tier` 控制注入的完整程度：
 
 ```bash
+# Tier 1+ (所有 skill)
 1. gstack-update-check          检测是否有新版本
 2. session touch                 更新 ~/.gstack/sessions/$PPID
 3. 读取 config                   proactive、telemetry、routing 等偏好
+
+# Tier 2+
 4. gstack-learnings-search       加载 top 3 学习到上下文
+
+# Tier 3+ (大多数 skill)
 5. gstack-timeline-log started   记录 skill 开始事件（后台，非阻塞）
 6. telemetry log                 记录 skill 启动（如果 telemetry 开启）
 7. 一次性初始化（仅首次出现）：
@@ -314,10 +325,13 @@ user-stated   永不衰减                 用户明确陈述的始终有效
    - Telemetry 许可请求
    - Proactive 行为设置
    - Skill routing 注入 CLAUDE.md
-   - Vendoring 弃用警告
+
+# Tier 4 (关键路径 skill：/review、/ship 等)
+8. Vendoring 弃用警告
+   Session 追踪、完整 "Boil the Lake" 规则注入
 ```
 
-这就是 `preamble-tier` 的意义：tier 越高，注入的步骤越完整（1=最简，4=全部）。
+Tier 越高，初始化越完整，token 消耗也略多。`/review`、`/ship` 用 Tier 4，因为它们是代码入库前的最后关口。详见 [how-skills-work.md](./how-skills-work.md)。
 
 ---
 
@@ -330,20 +344,27 @@ user-stated   永不衰减                 用户明确陈述的始终有效
 停止点（需用户干预）：
 1. Merge conflict（无法自动解决）
 2. 测试失败（且属于当前分支引入的）
-3. ASK 类 review 发现（用户决策后 re-run）
-4. Coverage 低于阈值（可 override）
+3. Eval suite 失败（Step 3.25，仅在 prompt 相关文件变更时触发）
+4. Coverage 低于阈值（可 override，但会要求明确确认）
 5. P0 计划项未完成（必须 DONE 或显式 override）
-6. MINOR/MAJOR 版本升级（需用户确认）
+6. ASK 类 review 发现（用户逐条决策后需 re-run /ship 重新验证）
+7. Greptile comments 需要升级处理（Step 3.75，PR 已存在时才触发）
+8. MINOR/MAJOR 版本升级（需用户确认）
 
-其余全部自动化：merge、test、fix、version、changelog、todos、commit、push、PR。
+其余全部自动化：merge、test、AUTO-FIX、version、changelog、todos、commit、push、PR。
 
 ```
 /ship 输出的 PR body 包含：
-├── Review summary（本次评审发现 + 用户决策）
-├── Coverage report（测试覆盖率）
-├── Plan completion（P0/P1 完成状态）
-├── Version bump 原因
-└── Changelog excerpt
+├── Summary（所有变更摘要，按主题分组）
+├── Test Coverage（覆盖率变化，Step 3.4 数据）
+├── Pre-Landing Review（代码审查发现，自动修/用户决策）
+├── Design Review（前端变更时，lite 设计检查）
+├── Eval Results（prompt 相关文件变更时）
+├── Greptile Review（PR 已存在时）
+├── Scope Drift（范围漂移检测，Step 3.48）
+├── Plan Completion（计划项完成状态，Step 3.45）
+├── Verification Results（验证测试结果，Step 3.47）
+└── TODOS（本次 ship 标记完成的待办项）
 ```
 
 ---
