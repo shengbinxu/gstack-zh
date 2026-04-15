@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session 启动（每次新 session 必须执行）
+
+```bash
+# 确保上游源码在 upstream/ 且是最新的
+if [ -d upstream/.git ]; then
+  git -C upstream pull --ff-only 2>&1 | tail -1
+else
+  git clone https://github.com/garrytan/gstack.git upstream
+fi
+```
+
+执行后告知用户：upstream 当前 HEAD commit（`git -C upstream log -1 --oneline`）。
+
+> `upstream/` 已在 `.gitignore` 中排除，不会提交到本仓库。
+> 源码路径：`upstream/<skill-name>/SKILL.md`，翻译时直接 Read 这里而非通过 gh api。
+
+---
+
 ## 项目性质
 
 这是一个**纯文档仓库**，无代码、无构建步骤、无测试命令。内容是对 [garrytan/gstack](https://github.com/garrytan/gstack) 的中文深度注解学习指南。
