@@ -16,14 +16,11 @@ jobs:
       - name: Checkout gstack-zh (for SYNC.md)
         uses: actions/checkout@v4
 
-      - name: Read last synced state
+      - name: Read last synced SHA
         id: last
         run: |
-          LAST_VER=$(grep 'gstack-version' SYNC.md | cut -d' ' -f2)
           LAST_SHA=$(grep 'upstream-sha' SYNC.md | cut -d' ' -f2)
-          echo "version=$LAST_VER" >> "$GITHUB_OUTPUT"
           echo "sha=$LAST_SHA" >> "$GITHUB_OUTPUT"
-          echo "Last synced version: $LAST_VER"
           echo "Last synced SHA: $LAST_SHA"
 
       - name: Checkout upstream gstack (full history)
@@ -39,7 +36,7 @@ jobs:
           cd upstream-gstack
           HEAD_SHA=$(git rev-parse HEAD)
           HEAD_MSG=$(git log -1 --pretty=%s)
-          # Extract version from latest commit message like "(v0.16.4.0)"
+          # Extract version from latest commit message like "(v0.16.4.0)" — display only
           LATEST_VER=$(echo "$HEAD_MSG" | grep -oP '\(v[\d.]+\)' | tr -d '()' | head -1)
           echo "sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
           echo "version=${LATEST_VER:-unknown}" >> "$GITHUB_OUTPUT"
@@ -89,7 +86,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LAST_VER="${{ steps.last.outputs.version }}"
           LATEST_VER="${{ steps.latest.outputs.version }}"
           LAST_SHA="${{ steps.last.outputs.sha }}"
           LATEST_SHA="${{ steps.latest.outputs.sha }}"
@@ -101,8 +97,8 @@ jobs:
           {
             echo "## gstack upstream update detected"
             echo ""
-            echo "**Previous version:** \`${LAST_VER}\` (\`${LAST_SHA:0:8}\`)"
-            echo "**New version:** \`${LATEST_VER}\` (\`${LATEST_SHA:0:8}\`)"
+            echo "**Last synced SHA:** \`${LAST_SHA:0:8}\`"
+            echo "**Current upstream SHA:** \`${LATEST_SHA:0:8}\`${LATEST_VER:+ (${LATEST_VER})}"
             echo "**Changed files:** ${CHANGED_COUNT}"
             echo "**New commits:** ${COMMIT_COUNT}"
             echo ""
@@ -120,17 +116,25 @@ jobs:
             echo ""
             echo "- [ ] Review changed files above, focus on \`.tmpl\` and \`SKILL.md\` files"
             echo "- [ ] Update corresponding annotation docs in \`docs/skills/\`"
-            echo "- [ ] Update \`SYNC.md\` with new version, date, and upstream SHA:"
+            echo "- [ ] Update \`SYNC.md\`:"
             echo '```'
-            echo "gstack-version: ${LATEST_VER}"
             echo "synced-at: $(date +%Y-%m-%d)"
             echo "upstream-sha: ${LATEST_SHA}"
             echo '```'
-            echo "- [ ] Tag the release: \`git tag -a ${LATEST_VER} -m \"Sync with gstack ${LATEST_VER}\" && git push origin ${LATEST_VER}\`"
+            if [ -n "$LATEST_VER" ] && [ "$LATEST_VER" != "unknown" ]; then
+              echo "- [ ] Tag the release: \`git tag -a ${LATEST_VER} -m \"Sync with gstack ${LATEST_VER}\" && git push origin ${LATEST_VER}\`"
+            fi
             echo "- [ ] Close this issue"
           } > /tmp/issue-body.md
 
+          # Build issue title — include version if parseable
+          if [ -n "$LATEST_VER" ] && [ "$LATEST_VER" != "unknown" ]; then
+            TITLE="Sync: gstack ${LATEST_VER} (${LATEST_SHA:0:8}) — ${COMMIT_COUNT} new commits"
+          else
+            TITLE="Sync: gstack ${LATEST_SHA:0:8} — ${COMMIT_COUNT} new commits"
+          fi
+
           gh issue create \
-            --title "Sync: gstack ${LATEST_VER} (${LATEST_SHA:0:8}) — ${COMMIT_COUNT} new commits" \
+            --title "$TITLE" \
             --label "sync" \
             --body-file /tmp/issue-body.md

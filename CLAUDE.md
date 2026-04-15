@@ -53,12 +53,11 @@ SYNC.md          # 当前对齐的上游版本号、日期、upstream commit SHA
 
 ### SYNC.md 格式
 ```
-gstack-version: v0.16.4.0
 synced-at: 2026-04-14
 upstream-sha: 7e96fe299b085010fb2e34d9c4fbfc7e44b617e1
 ```
 
-`upstream-sha` 是本次同步时上游 `garrytan/gstack` 的 HEAD commit SHA，是 diff 基准点。
+`upstream-sha` 是本次同步时 `garrytan/gstack` 的 HEAD commit SHA，是 CI diff 基准点。同步检测完全基于 SHA，不依赖版本号字符串。
 
 ### 同步一个新版本的步骤
 1. GitHub Actions（每日 UTC 08:00）自动检测：对比 `SYNC.md` 中 `upstream-sha` 与上游当前 HEAD，有新 commit 则开 Issue，列出变更文件和 commit 列表
