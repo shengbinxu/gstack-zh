@@ -18,6 +18,7 @@ gstack 中文深度注解学习指南。文档分两层：**实现原理**（理
 | [methodology.md](methodology.md) | gstack 研发方法论：从 /autoplan 到 /ship 的完整开发闭环，各阶段 artifacts | 理解 gstack 的工程实践 |
 | [browse-daemon.md](browse-daemon.md) | Browse 守护进程源码解读：`$B` 命令背后的无头浏览器实现 | 深入 browse 子系统 |
 | [design-binary.md](design-binary.md) | Design 二进制源码解读：`$D` 命令背后的设计工具实现 | 深入 design 子系统 |
+| [workflow-steps.md](workflow-steps.md) | **完整需求开发工作流**：web + 后端需求从 /office-hours 到 /ship 的逐步操作手册 | 开发新需求前读 |
 | [company-lib-guide.md](company-lib-guide.md) | **公司库构建指南**：基于 gstack 源码分析，提炼"可直接复用"和"必须重新设计"的决策 | 准备自建类似库时读 |
 
 ---
