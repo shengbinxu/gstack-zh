@@ -886,3 +886,42 @@ feature 分支 + UI 改动 pre-ship     → 主动建议
 
 注意：如果在规划阶段（还没实现），用 /plan-design-review 而不是 /design-review
 ```
+
+---
+
+## v0.17.0.0 新增：UX 行为基础（`{{UX_PRINCIPLES}}`）
+
+v0.17.0.0 将 UX 行为原则作为共享模板块注入到 `/design-review`。这些原则在"Prior Learnings"之后、审计阶段之前出现，作为评审的行为框架。
+
+详细解读参见 [design-html.md 的 UX 原则章节](./design-html.md#v0170新增ux-原则用户实际行为ux_principles)。
+
+### 在 `/design-review` 中的具体应用
+
+UX 原则在 `/design-review` 中被用于两个关键位置：
+
+**1. Phase 1（第一印象）中的"Page Area Test"**
+
+> **原文**：Point at each clearly defined area of the page. Can you instantly name its purpose? ("Things I can buy," "Today's deals," "How to search.") Areas you can't name in 2 seconds are poorly defined.
+
+这直接实现了 Billboard Design 原则——用户能否在 2 秒内理解每个区域的目的。如果 AI 也说不清，用户更说不清。
+
+**2. Phase 3（逐页审计）中的"Trunk Test"**
+
+每个页面都运行 Trunk Test，检验导航是否能回答 6 个问题：这是什么网站？我在哪个页面？主要版块是什么？等。Trunk Test FAIL 直接触发 HIGH impact 发现，即使页面其他方面都很漂亮。
+
+**3. Phase 4（交互流程）中的"Goodwill Reservoir"**
+
+审计时维护一个善意计量表（从 70/100 开始），每个摩擦点扣分，每个亮点加分。最终报告包含：
+
+```
+Goodwill: 35 ████████░░░░░░░░░░░░░░░░░░░░░░
+  Step 1: Login page        70 → 75  (+5 obvious primary action)
+  Step 2: Dashboard         75 → 60  (-15 interstitial tour popup)
+  FINAL: 35/100 ⚠️ CRITICAL UX DEBT
+```
+
+这把"用户体验如何"从主观感受变成了可量化的 35/100。
+
+**设计原理：为什么审计工具需要用户行为理论？**
+
+传统的设计审计工具（Lighthouse、axe 等）只检查技术合规性（可访问性分数、对比度比例）。`/design-review` 的独特性在于：它用 UX 行为理论来判断设计是否真正服务于用户的实际行为模式。技术合规不等于用户友好——一个页面可以 WCAG 100 分但仍然让用户无法完成任务。

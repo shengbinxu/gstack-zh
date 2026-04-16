@@ -1112,3 +1112,46 @@ Browse 方式：
 ```
 
 Browse 是 gstack 中唯一一个 preamble-tier: 1 的技能（除了一些极度轻量的工具技能）。这反映了它的本质——它是基础设施，不是业务逻辑。它做一件事，做好：让 AI 能像真实用户一样与 web app 交互。
+
+---
+
+## v0.17.0.0 新增：`ux-audit` 命令
+
+> **原文（Inspection 命令表）**：
+> ```
+> | `ux-audit` | Extract page structure for UX behavioral analysis — site ID, nav, headings,
+> |            | text blocks, interactive elements. Returns JSON for agent interpretation. |
+> ```
+
+**中文翻译**：提取页面结构用于 UX 行为分析——站点 ID、导航、标题、文本块、可交互元素。返回 JSON 供 AI 解析。
+
+### 与 `snapshot` 的区别
+
+`ux-audit` 不是通用快照，而是**专门为 UX 行为分析设计**的结构化提取：
+
+```
+snapshot -i：
+  目的：找到可交互元素的 @ref，用于操作（click、fill）
+  返回：ARIA 树文本，@e1、@e2...等 ref 标签
+  适用：执行用户操作
+
+ux-audit：
+  目的：分析页面结构和 UX 质量
+  返回：JSON 格式的结构化页面信息
+  适用：让 AI 做 UX 评估（导航清晰度、视觉层次、内容结构）
+```
+
+### 返回结构
+
+`ux-audit` 返回的 JSON 包含：
+- **site ID**：站点标识（logo、品牌名）
+- **nav**：导航结构（主导航、面包屑、子导航）
+- **headings**：标题层次（h1-h6，带文本内容）
+- **text blocks**：主要文本内容块
+- **interactive elements**：所有可交互元素（不含 @ref）
+
+### 设计原理：为什么这个命令属于 Inspection 而非 Reading？
+
+`text`、`accessibility`、`html` 等命令是"读取"——它们返回页面的原始内容，不做结构化分析。`ux-audit` 是"检查"——它针对特定目的（UX 分析）做有选择性的结构化提取，返回的是 AI 直接可用的语义信息，不是原始 DOM。
+
+这支持了 `/design-review` 和 `/plan-design-review` 的 UX 行为分析——不需要 AI 自己从 ARIA 树中推断页面结构，直接获取结构化的 UX 数据。

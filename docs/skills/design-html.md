@@ -1094,4 +1094,89 @@ design-html 和 design-shotgun 是**两个不同阶段**的工具：
 
 ---
 
-*本文档基于 `design-html/SKILL.md`（1180 行）整理。Pretext 库：[@chenglou/pretext](https://github.com/chenglou/pretext)。*
+---
+
+## v0.17.0.0 新增：UX 原则——用户实际行为（`{{UX_PRINCIPLES}}`）
+
+v0.17.0.0 通过 `{{UX_PRINCIPLES}}` 模板占位符，将一套共享的 UX 行为原则注入到所有设计技能（design-html、design-review、design-shotgun、plan-design-review）中。
+
+### 三条可用性定律
+
+> **原文**：
+> 1. **Don't make me think.** Every page should be self-evident. If a user stops to think "What do I click?" or "What does this mean?", the design has failed.
+> 2. **Clicks don't matter, thinking does.** Three mindless, unambiguous clicks beat one click that requires thought.
+> 3. **Omit, then omit again.** Get rid of half the words on each page, then get rid of half of what's left.
+
+**中文翻译**：
+1. **不要让我思考**：每个页面应该自明。如果用户停下来想"我点哪里？"或"这是什么意思？"——设计失败了。
+2. **点击次数不重要，思考次数才重要**：三次无脑的、明确的点击，胜过一次需要思考的点击。
+3. **删掉，再删掉**：把每页的词删掉一半，再把剩余的删掉一半。
+
+**设计原理**：这三条定律来自 Steve Krug 的《Don't Make Me Think》，是 UX 设计中最广为接受的可用性原则。gstack 将它们直接编入设计技能，是要让 AI 在生成 HTML 时**主动检验**每个设计决策是否符合这三条定律，而不是事后评审。
+
+### 用户实际行为模式
+
+> **原文**：
+> - **Users scan, they don't read.** Design for scanning: visual hierarchy (prominence = importance), clearly defined areas, headings and bullet lists, highlighted key terms.
+> - **Users satisfice.** They pick the first reasonable option, not the best.
+> - **Users muddle through.** They wing it. If they accomplish their goal by accident, they won't seek the "right" way.
+> - **Users don't read instructions.** They dive in.
+
+**中文翻译**：
+- **用户扫描，不阅读**：为扫描而设计——视觉层次（突出度 = 重要性）、清晰的区域划分、标题和要点列表。
+- **用户满足即止**：他们选第一个合理的选项，不选最优的。
+- **用户就这么摸索**：他们靠本能操作。偶然达成目标后，不会再去找"正确方法"。
+- **用户不读说明**：他们直接上手。
+
+**设计原理**：这些行为模式直接决定了 design-html 的设计原则。比如"用户扫描"意味着视觉层次比完整内容更重要；"用户不读说明"意味着 UI 必须自明，任何需要说明才能使用的元素都是失败的设计。
+
+### 路牌设计原则（Billboard Design）
+
+> **原文**：
+> - **Use conventions.** Logo top-left, nav top/left, search = magnifying glass. Don't innovate on navigation to be clever.
+> - **Visual hierarchy is everything.** More important = more prominent. If everything shouts, nothing is heard.
+> - **Make clickable things obviously clickable.** No relying on hover states for discoverability.
+> - **Eliminate noise.** Fix noise by removal, not addition.
+> - **Clarity trumps consistency.**
+
+**设计原理**："Billboard Design"这个比喻极其精准——界面就像公路边 60 英里/小时速度下掠过的路牌，用户没有时间细读。这要求设计必须在极短时间内传达核心信息，就像路牌只能写几个大字。这个比喻也解释了为什么"AI slop"（AI 生成的通用界面）会让有经验的设计师感到不舒服——它们都是"产品手册"而不是"路牌"。
+
+### Trunk Test（躯干测试）
+
+> **原文（Navigation as Wayfinding）**：
+> Navigation must always answer: What site is this? What page am I on? What are the major sections? Where am I? How can I search?
+> The "trunk test": cover everything except the navigation. You should still know what site this is, what page you're on, and what the major sections are.
+
+**中文翻译**：想象被随机放到网站的某个页面（如同被放进汽车后备箱后打开）。不看其他内容，只看导航，你能回答：这是什么网站？我在哪个页面？主要版块有哪些？如果不能——导航失败了。
+
+### 善意储蓄罐（Goodwill Reservoir）
+
+> **原文**：
+> Users start with a reservoir of goodwill. Every friction point depletes it.
+> **Deplete faster:** Hiding info users want. Punishing users for not doing things your way. Asking for unnecessary information.
+> **Replenish:** Know what users want to do and make it obvious. Save them steps wherever possible.
+
+**中文翻译**：用户带着一罐善意开始使用产品。每个摩擦点消耗善意。隐藏用户需要的信息、惩罚用户不按你的方式操作、要求不必要的信息——都在快速消耗善意。让用户想做的事变得明显、减少步骤——在补充善意。
+
+**设计原理**：这个比喻把"用户体验"从抽象变成了可量化的概念。`/design-review` 的 Goodwill Score 直接实现了这个模型——每个 UX 问题有对应的扣分，每个 UX 亮点有对应的加分，最终给出 0-100 的善意分数。
+
+### 移动端：相同规则，更高风险
+
+> **原文**：
+> All the above applies on mobile, just more so. Real estate is scarce, but never sacrifice usability for space savings. Affordances must be VISIBLE: no cursor means no hover-to-discover. Touch targets must be big enough (44px minimum).
+
+**中文翻译**：所有规则在移动端同样适用，只是更严格。空间稀缺，但永远不要为节省空间牺牲可用性。交互提示必须可见——移动端没有鼠标，hover 不存在。触摸目标至少 44px。
+
+### 为什么这个模板块被提取成 `{{UX_PRINCIPLES}}`？
+
+在 v0.17.0.0 之前，各个设计技能各自描述 UX 原则，存在版本漂移的风险。v0.17.0.0 将这些原则提取到 `resolvers/design.ts` 中作为共享模板块，确保：
+
+1. **一致性**：所有设计技能使用相同的 UX 行为基础
+2. **可维护性**：更新一处，所有技能同步更新
+3. **可扩展性**：新增设计技能只需注入 `{{UX_PRINCIPLES}}`
+
+这是 gstack 模板系统的核心价值——让 AI 在任何设计任务中都有一致的 UX 行为认知基础。
+
+---
+
+*本文档基于 `design-html/SKILL.md`（1266 行）整理。Pretext 库：[@chenglou/pretext](https://github.com/chenglou/pretext)。*

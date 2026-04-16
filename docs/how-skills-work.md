@@ -66,7 +66,7 @@ scripts/gen-skill-docs.ts
 
 ---
 
-## 9个模板变量详解
+## 12个模板变量详解（v0.17.0.0 更新）
 
 ### `{{PREAMBLE}}` — 运行时初始化
 
@@ -291,6 +291,74 @@ Verdict: CLEARED
 - 如找到 → 整节替换
 - 如未找到 → 追加到文件末尾
 - 始终作为文件最后一节
+
+---
+
+### `{{DESIGN_SETUP}}` — 设计二进制发现
+
+**Resolver**：`scripts/resolvers/design.ts`
+
+**作用**：与 `{{BROWSE_SETUP}}` 对称，发现 `$D`（design 二进制）的路径。
+
+注入顺序：先检查项目本地路径（`$_ROOT/.claude/skills/gstack/design/dist/design`），再检查全局路径（`~/.claude/skills/gstack/design/dist/design`）。
+
+---
+
+### `{{DESIGN_SHOTGUN_LOOP}}` — 比较板反馈循环
+
+**Resolver**：`scripts/resolvers/design.ts`
+
+**作用**：将设计变体比较板（comparison board）的核心反馈循环注入到 `/design-shotgun`、`/plan-design-review` 和 `/design-consultation` 中。确保三个技能使用一致的反馈收集逻辑（HTTP POST、feedback.json、polling fallback）。
+
+---
+
+### `{{UX_PRINCIPLES}}` — UX 行为基础（v0.17.0.0 新增）
+
+**Resolver**：`scripts/resolvers/design.ts`
+
+**注入技能**：`/design-html`、`/design-shotgun`、`/design-review`、`/plan-design-review`
+
+**作用**：将一套统一的 UX 行为原则注入到所有设计相关技能中，作为设计决策的行为理论基础。
+
+**包含内容**：
+
+```
+1. 可用性三定律（Steve Krug）
+   ├── 不要让用户思考
+   ├── 点击次数 < 思考次数
+   └── 删掉，再删掉
+
+2. 用户实际行为模式
+   ├── 扫描而非阅读
+   ├── 满足即止（satisfice）
+   ├── 摸索前行（muddle through）
+   └── 不读说明
+
+3. 路牌设计原则（Billboard Design）
+   ├── 使用约定（logo 左上，导航 top/left）
+   ├── 视觉层次 = 信息重要性
+   ├── 可点击元素必须显而易见
+   ├── 消除噪音（靠移除，不靠添加）
+   └── 清晰 > 一致性
+
+4. 导航即路径引导（Navigation as Wayfinding）
+   └── Trunk Test（6 个导航自测问题）
+
+5. 善意储蓄罐（Goodwill Reservoir）
+   ├── 消耗善意的行为（隐藏信息、格式惩罚、强制步骤）
+   └── 补充善意的行为（明显的主任务、减少步骤）
+
+6. 移动端同等规则（更高风险）
+   └── 44px 最小触摸目标，不依赖 hover
+```
+
+**设计意图**：
+
+v0.17.0.0 之前，各设计技能各自描述 UX 理论，存在版本漂移风险。提取为共享模板块后：
+
+1. **一致性**：所有设计技能共享同一套 UX 理论基础
+2. **可维护性**：更新理论只需修改 `resolvers/design.ts`
+3. **深度集成**：`/design-review` 的 Goodwill Score、Trunk Test、Phase 1 Page Area Test 都直接基于这些原则
 
 ---
 
