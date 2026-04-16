@@ -1,5 +1,51 @@
 # 用 AI 维护一个开源项目：从创建到持续迭代
 
+## 导读：AI 是怎么维护这个项目的
+
+维护一个跟踪上游的文档仓库，核心工作是：检测上游变更 → 对比差异 → 更新注解 → 提交审核。这个流程重复、机械、有明确规则——正好适合自动化。
+
+下面这张图是整套系统的全貌。**蓝色**是云端自动运行（GitHub Actions），**橙色**是本地自动运行（定时脚本 + Claude Code），**绿色**是唯一需要人工介入的环节。
+
+```mermaid
+flowchart TD
+    A[上游 gstack 有新 commit] --> B
+
+    subgraph cloud["☁️ 云端自动（GitHub Actions）"]
+        B[每日 UTC 08:00 检测\nSYNC.md SHA vs 上游 HEAD]
+        B -- 有变更 --> C[自动创建结构化 Issue\n变更文件清单 + 新 SHA]
+    end
+
+    subgraph local["💻 本地自动（launchd + Claude Code）"]
+        D[每 4 小时轮询\n检测 open Issue]
+        C --> D
+        D -- 发现 Issue --> E{PR 已存在？}
+        E -- 是 --> F[跳过，幂等退出]
+        E -- 否 --> G[创建 feature branch\nauto-sync/issue-N]
+        G --> H["claude -p 非交互模式\n读上游文件 → 对比差异 → 更新注解"]
+        H --> I{有新 commit？}
+        I -- 否 --> J[清理分支，退出]
+        I -- 是 --> K[git push + 自动创建 PR\nbody 写 Closes #N]
+    end
+
+    subgraph human["👤 人工"]
+        L[Review PR\n确认注解质量]
+        K --> L
+        L -- merge --> M[Issue 自动关闭\nGitHub 内置机制]
+    end
+
+    classDef cloudStyle fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    classDef localStyle fill:#fed7aa,stroke:#f97316,color:#7c2d12
+    classDef humanStyle fill:#dcfce7,stroke:#22c55e,color:#14532d
+
+    class B,C cloudStyle
+    class D,E,F,G,H,I,J,K localStyle
+    class L,M humanStyle
+```
+
+后文各节是对图中每个环节的详细说明：第二节讲整体架构和变更检测，第三节深入 auto-sync 脚本的机制，第四节介绍把本地方案迁移到 GitHub Actions 的思路。
+
+---
+
 ## 一、这个项目是干什么的
 
 ### 背景
