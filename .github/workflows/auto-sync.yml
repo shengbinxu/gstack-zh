@@ -1,0 +1,180 @@
+name: Auto Sync Annotations via Claude Code
+
+on:
+  issues:
+    types: [opened]
+
+# Only run for issues with the 'sync' label (created by sync-check.yml)
+jobs:
+  auto-sync:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'sync')
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create feature branch
+        run: |
+          BRANCH="auto-sync/issue-${{ github.event.issue.number }}"
+          git checkout -b "$BRANCH"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+      - name: Clone upstream gstack
+        run: |
+          git clone --depth 1 https://github.com/garrytan/gstack.git upstream
+
+      - name: Run Claude Code to update annotations
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          direct_prompt: |
+            You are working on the gstack-zh repository — a Chinese annotation/study guide for garrytan/gstack.
+
+            ## Repository structure
+
+            - `docs/skills/*.md` — one annotation file per gstack skill
+            - `docs/architecture.md`, `docs/how-skills-work.md`, etc. — other docs
+            - `SYNC.md` — tracks the upstream sync state (synced-at + upstream-sha)
+            - `upstream/` — fresh clone of garrytan/gstack (already checked out in this workspace)
+
+            ## Annotation file format (docs/skills/<skill>.md)
+
+            Each section follows this exact pattern:
+            ```
+            ### Section Title
+
+            > **原文**:
+            > [exact English original text, as a blockquote]
+
+            **中文翻译**
+
+            [Chinese translation paragraph]
+
+            **设计原理解读**
+
+            [Design analysis: WHY it's designed this way, not just what it does]
+            ```
+
+            Read CLAUDE.md for the full annotation format spec before starting.
+
+            ## Issue that triggered this workflow
+
+            Title: ${{ github.event.issue.title }}
+
+            Body:
+            ${{ github.event.issue.body }}
+
+            ## Your task
+
+            ### Step 1: Parse the issue
+
+            From the issue body, extract:
+            - The **new upstream-sha** (full 40-char SHA from the SYNC.md checklist section)
+            - The **changed files list** (from the "Changed files" code block)
+            - The **version** (from the issue title, e.g. `v0.17.0.0`)
+
+            ### Step 2: Determine which annotation files need updating
+
+            Apply these mapping rules to each changed file:
+
+            | Upstream changed file | Action |
+            |----------------------|--------|
+            | `{skill}/SKILL.md` or `{skill}/SKILL.md.tmpl` | Update `docs/skills/{skill}.md` |
+            | `ARCHITECTURE.md` | Update `docs/architecture.md` |
+            | `CHANGELOG.md`, `VERSION`, `SKILL.md` (root) | No annotation needed — skip |
+            | `scripts/**`, `browse/src/**`, `test/**` | Source code — skip |
+
+            Example: `design-review/SKILL.md` → update `docs/skills/design-review.md`
+
+            ### Step 3: Update each annotation file
+
+            For each annotation file that needs updating:
+            1. Read the upstream file: `upstream/{skill}/SKILL.md`
+            2. Read the current annotation: `docs/skills/{skill}.md`
+            3. Diff what's new or changed in the upstream
+            4. Update the annotation:
+               - For new sections: add English original (blockquote) + Chinese translation + design analysis
+               - For modified sections: update the English original + revise translation if needed
+               - Never remove existing Chinese analysis unless the upstream section was deleted
+            5. If the annotation file doesn't exist yet, create it following the format of existing files in `docs/skills/`
+
+            ### Step 4: Update SYNC.md
+
+            Replace the content to match the new state:
+            ```
+            synced-at: <today's date, YYYY-MM-DD>
+            upstream-sha: <full 40-char SHA from the issue>
+            ```
+
+            ### Step 5: Commit
+
+            ```bash
+            git add docs/ SYNC.md
+            git commit -m "sync: update annotations to gstack <version> (#${{ github.event.issue.number }})
+
+            Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+            ```
+
+            Do NOT push — the workflow handles that.
+
+            ### Important notes
+
+            - Always read CLAUDE.md first for project-specific annotation conventions
+            - Never modify English original text in existing annotations
+            - If upstream added a completely new skill with no docs/skills/ file, create a new annotation file
+            - Focus on `SKILL.md` content — TypeScript source files don't need annotation
+
+      - name: Push feature branch
+        run: |
+          git push origin "$BRANCH"
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ github.event.issue.number }};
+            const branch = process.env.BRANCH;
+
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `sync: auto-update annotations (${{ github.event.issue.title }})`,
+              head: branch,
+              base: 'main',
+              body: [
+                '## Summary',
+                '',
+                'Auto-generated by Claude Code via `auto-sync.yml`.',
+                '',
+                '### What changed',
+                '- Updated annotation files in `docs/skills/` to reflect upstream changes',
+                '- Updated `SYNC.md` with new upstream SHA',
+                '',
+                `Closes #${issueNumber}`,
+              ].join('\n'),
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: `🤖 Claude Code has processed this sync. PR ready for review: ${pr.data.html_url}`,
+            });
+
+            return pr.data.number;
