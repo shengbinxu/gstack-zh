@@ -86,7 +86,7 @@ plan-design-review/SKILL.md
 ### 第二层：自动修复（本地脚本 + Claude Code）
 
 `auto-sync-issue.sh` 通过 macOS launchd 每 4 小时运行一次，检测到 Issue 后自动处理。
-
+![alt text](image.png)
 详细机制见下一节。
 
 ---
