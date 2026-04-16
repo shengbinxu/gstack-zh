@@ -139,7 +139,7 @@ gstack/
 │
 ├── scripts/             # 构建工具
 │   ├── gen-skill-docs.ts       # 模板 → SKILL.md 编译器
-│   ├── resolvers/              # 9个模板变量的解析器
+│   ├── resolvers/              # 12个模板变量的解析器（v0.17.0.0新增 {{UX_PRINCIPLES}}）
 │   └── host-config.ts          # 多宿主配置（Claude/Codex/Kiro等）
 │
 ├── hosts/               # 各 AI 宿主配置

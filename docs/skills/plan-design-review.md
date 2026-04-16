@@ -1068,3 +1068,45 @@ Hard rejections 提升为 Pass 4（AI Slop 风险）的首个问题，标记 `[H
 ```
 
 当所有通过都达到 8+ 分时，技能会建议："方案设计完整。运行 /design-review 实现后进行视觉 QA。"这就是两个技能交接的时刻。
+
+---
+
+## v0.17.0.0 新增：UX 行为基础（`{{UX_PRINCIPLES}}`）
+
+v0.17.0.0 将 UX 行为原则（`{{UX_PRINCIPLES}}`）注入到 `/plan-design-review`，作为评审的行为框架。
+
+详细解读参见 [design-html.md 的 UX 原则章节](./design-html.md#v0170新增ux-原则用户实际行为ux_principles)。
+
+### 在 `/plan-design-review` 中的具体应用
+
+`/plan-design-review` 在**规划阶段**（代码实现之前）工作。UX 原则在这里的应用是：用行为理论来审视**方案文字**——不是截图，而是描述性文字是否暗示了良好的 UX 决策。
+
+**7 个维度评分时的 UX 检查点**
+
+```
+维度 1（布局）- UX 检查：
+  "Does the described layout avoid 'everything shouts, nothing is heard'?"
+  → 如果方案说"3个等高的特性卡片各占1/3宽"，评分扣分
+  → 如果方案说"一个主视觉焦点，辅以次要信息"，评分加分
+
+维度 5（交互）- UX 检查：
+  "Are described interactions mindless clicks or do they require thought?"
+  → 每个需要用户思考的决策点都是设计失败
+  → 好的交互设计：每个选择都应该像"动物、蔬菜、矿物"那样明显
+
+维度 6（内容）- UX 检查：
+  "Is there happy talk? Are there instructions that shouldn't exist?"
+  → 检测 Welcome to... / Unlock the power of... 等 happy talk 模式
+  → 任何需要说明才能使用的 UI 元素都应该被重新设计
+```
+
+**Trunk Test（应用于方案描述）**
+
+即使是文字方案，也可以做 Trunk Test：
+> 如果方案中描述的页面被随机截图后给一个陌生人看，他能在 3 秒内说出"这是什么网站、我在哪个页面"吗？
+
+如果方案描述的导航/布局无法通过这个测试，即使还没写代码，`/plan-design-review` 就已经能发现这个问题。
+
+**设计原理：规划阶段的 UX 检查为什么比实现后检查更有价值？**
+
+修改一行方案文字的成本是零。修改已实现的 UI 组件需要改代码、改样式、改测试。`{{UX_PRINCIPLES}}` 在规划阶段注入 UX 约束，确保这些决策在成本最低的时候被发现和纠正。这是 gstack "Boil the Lake" 原则在 UX 维度的具体实现。

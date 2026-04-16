@@ -963,4 +963,48 @@ AI：找到上次的探索：
 
 ---
 
-*本文档基于 `design-shotgun/SKILL.md`（954 行）整理。与 `/design-html` 配合使用构成 gstack 完整设计工作流。*
+---
+
+## v0.17.0.0 新增：UX 行为基础（`{{UX_PRINCIPLES}}`）
+
+v0.17.0.0 将 UX 行为原则（`{{UX_PRINCIPLES}}`）注入到 `/design-shotgun`，出现在 DESIGN SETUP 之后、Step 0（Session Detection）之前。
+
+详细解读参见 [design-html.md 的 UX 原则章节](./design-html.md#v0170新增ux-原则用户实际行为ux_principles)。
+
+### 在 `/design-shotgun` 中的具体应用
+
+`/design-shotgun` 的核心任务是**生成设计变体**。UX 行为原则在这里的作用是：
+
+**在生成 Brief 时自动过滤 AI Slop**
+
+当 AI 构建 `$D generate --brief "..."` 的 Brief 时，UX 原则作为约束条件注入：
+
+```
+不好的 Brief（容易产生 AI Slop）：
+  "现代 SaaS 落地页，三列特性网格，圆角卡片，渐变背景"
+
+好的 Brief（UX 原则约束）：
+  "落地页，一个清晰的视觉焦点，一个主要 CTA，
+   用户能在 3 秒内明白这是什么产品，
+   每个板块只做一件事，
+   不要 3 列特性网格，不要装饰性 blob"
+```
+
+**在概念生成（Step 3a）时提供多样性约束**
+
+UX 行为理论要求不同变体在不同维度上有所不同，而不只是配色/字体的微小变化：
+
+```
+好的 3 个方向（覆盖不同 UX 权衡）：
+  A) 单屏 hero-first（最大化第一印象冲击）
+  B) 导航优先（满足"用户满足即止"的跳转需求）
+  C) 内容密集（满足"用户扫描"的信息获取需求）
+```
+
+**设计原理：为什么设计探索工具也需要 UX 行为理论？**
+
+设计变体不只是"不同的视觉风格"，而应该是"不同的 UX 假设"。`{{UX_PRINCIPLES}}` 让 AI 在生成变体时有意识地探索不同的用户行为假设，而不是生成视觉上略有不同的同一个方案。
+
+---
+
+*本文档基于 `design-shotgun/SKILL.md`（1040 行）整理。与 `/design-html` 配合使用构成 gstack 完整设计工作流。*
