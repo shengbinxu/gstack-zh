@@ -208,31 +208,6 @@ gh pr create \
   Closes #$ISSUE_NUMBER"
 ```
 
-### 3.7 launchd vs cron
-
-在 macOS 上选 launchd 而不是 cron，原因：
-
-| | launchd | cron |
-|--|---------|------|
-| 睡眠唤醒 | 自动补跑错过的任务 | 睡眠期间的任务直接丢失 |
-| 日志 | 原生支持 stdout/stderr 重定向 | 需要手动处理 |
-| 可靠性 | macOS 原生，系统级管理 | 依赖 crontab 服务 |
-
-plist 配置核心：
-
-```xml
-<key>StartInterval</key>
-<integer>14400</integer>   <!-- 每4小时，单位秒 -->
-
-<key>StandardOutPath</key>
-<string>/Users/xushengbin/.local/logs/gstack-zh-sync.log</string>
-```
-
-注册命令：
-```bash
-launchctl load ~/Library/LaunchAgents/com.gstack-zh.sync.plist
-```
-
 ---
 
 ## 四、可选方案：在 GitHub Actions 中运行 Claude Code
