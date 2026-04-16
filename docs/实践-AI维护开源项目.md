@@ -11,26 +11,26 @@ flowchart TD
     A[上游 gstack 有新 commit] --> B
 
     subgraph cloud["☁️ 云端自动（GitHub Actions）"]
-        B[每日 UTC 08:00 检测\nSYNC.md SHA vs 上游 HEAD]
-        B -- 有变更 --> C[自动创建结构化 Issue\n变更文件清单 + 新 SHA]
+        B["每日 UTC 08:00 检测<br/>SYNC.md SHA vs 上游 HEAD"]
+        B -- 有变更 --> C["自动创建结构化 Issue<br/>变更文件清单 + 新 SHA"]
     end
 
     subgraph local["💻 本地自动（launchd + Claude Code）"]
-        D[每 4 小时轮询\n检测 open Issue]
+        D["每 4 小时轮询<br/>检测 open Issue"]
         C --> D
         D -- 发现 Issue --> E{PR 已存在？}
         E -- 是 --> F[跳过，幂等退出]
-        E -- 否 --> G[创建 feature branch\nauto-sync/issue-N]
-        G --> H["claude -p 非交互模式\n读上游文件 → 对比差异 → 更新注解"]
+        E -- 否 --> G["创建 feature branch<br/>auto-sync/issue-N"]
+        G --> H["claude -p 非交互模式<br/>读上游文件 → 对比差异 → 更新注解"]
         H --> I{有新 commit？}
         I -- 否 --> J[清理分支，退出]
-        I -- 是 --> K[git push + 自动创建 PR\nbody 写 Closes #N]
+        I -- 是 --> K["git push + 自动创建 PR<br/>body 写 Closes #N"]
     end
 
     subgraph human["👤 人工"]
-        L[Review PR\n确认注解质量]
+        L["Review PR<br/>确认注解质量"]
         K --> L
-        L -- merge --> M[Issue 自动关闭\nGitHub 内置机制]
+        L -- merge --> M["Issue 自动关闭<br/>GitHub 内置机制"]
     end
 
     classDef cloudStyle fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
